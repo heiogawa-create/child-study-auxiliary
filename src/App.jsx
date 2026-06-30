@@ -10,6 +10,7 @@ export default function App() {
   const [subject, setSubject] = useState('');
   const [question, setQuestion] = useState('');
   const [thinking, setThinking] = useState('');
+  const [photo, setPhoto] = useState(null);
   const { stamps, addStamp, todayCount, totalCount } = useStamps();
 
   const handleSelectSubject = (selectedSubject) => {
@@ -17,15 +18,17 @@ export default function App() {
     setPage('input');
   };
 
-  const handleSubmitQuestion = (q, t) => {
+  const handleSubmitQuestion = (q, t, p) => {
     setQuestion(q);
     setThinking(t);
+    setPhoto(p);
     setPage('hint');
   };
 
   const handleNewQuestion = () => {
     setQuestion('');
     setThinking('');
+    setPhoto(null);
     setPage('input');
   };
 
@@ -34,6 +37,7 @@ export default function App() {
     setSubject('');
     setQuestion('');
     setThinking('');
+    setPhoto(null);
   };
 
   const handleGoReward = () => {
@@ -109,6 +113,7 @@ export default function App() {
           subject={subject}
           question={question}
           thinking={thinking}
+          photo={photo}
           onNewQuestion={handleNewQuestion}
           onGoHome={handleGoHome}
           onEarnStamp={addStamp}
