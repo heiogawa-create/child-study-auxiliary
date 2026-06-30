@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TeacherCharacter from '../components/TeacherCharacter';
 import ActionButton from '../components/ActionButton';
+import PhotoCapture from '../components/PhotoCapture';
 
 const SUBJECT_ICONS = {
   さんすう: '🔢',
@@ -13,10 +14,13 @@ const SUBJECT_ICONS = {
 export default function InputPage({ subject, onSubmit, onBack }) {
   const [question, setQuestion] = useState('');
   const [thinking, setThinking] = useState('');
+  const [photo, setPhoto] = useState(null);
+
+  const canSubmit = question.trim() || photo;
 
   const handleSubmit = () => {
-    if (!question.trim()) return;
-    onSubmit(question.trim(), thinking.trim());
+    if (!canSubmit) return;
+    onSubmit(question.trim(), thinking.trim(), photo);
   };
 
   return (
@@ -46,6 +50,24 @@ export default function InputPage({ subject, onSubmit, onBack }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* 写真撮影 */}
+        <PhotoCapture photo={photo} onPhotoChange={setPhoto} />
+
+        {/* 区切り線 */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            color: '#BDBDBD',
+          }}
+        >
+          <div style={{ flex: 1, height: '2px', backgroundColor: '#E0E0E0' }} />
+          <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>または</span>
+          <div style={{ flex: 1, height: '2px', backgroundColor: '#E0E0E0' }} />
+        </div>
+
+        {/* テキスト入力 */}
         <div>
           <label
             style={{
@@ -56,13 +78,13 @@ export default function InputPage({ subject, onSubmit, onBack }) {
               color: '#5D4037',
             }}
           >
-            📝 もんだいをいれてね
+            📝 もんだいをかいてね
           </label>
           <textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="ここにもんだいをかいてね..."
-            rows={4}
+            rows={3}
             style={{
               width: '100%',
               padding: '14px',
@@ -79,6 +101,7 @@ export default function InputPage({ subject, onSubmit, onBack }) {
           />
         </div>
 
+        {/* どこまで考えたか */}
         <div>
           <label
             style={{
@@ -115,7 +138,7 @@ export default function InputPage({ subject, onSubmit, onBack }) {
         <ActionButton
           onClick={handleSubmit}
           color="#FF7043"
-          disabled={!question.trim()}
+          disabled={!canSubmit}
         >
           💡 ヒントをもらう
         </ActionButton>

@@ -9,6 +9,7 @@ export default function HintPage({
   subject,
   question,
   thinking,
+  photo,
   onNewQuestion,
   onGoHome,
   onEarnStamp,
@@ -17,25 +18,24 @@ export default function HintPage({
   const [loading, setLoading] = useState(true);
   const [stampEarned, setStampEarned] = useState(false);
 
-  // 最初のヒントを取得
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const hint = await generateHint(subject, question, thinking, 0);
+      const hint = await generateHint(subject, question, thinking, 0, photo);
       if (!cancelled) {
         setHints([hint]);
         setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [subject, question, thinking]);
+  }, [subject, question, thinking, photo]);
 
   const handleMoreHint = async () => {
     const nextLevel = hints.length;
     if (nextLevel >= MAX_HINTS) return;
     setLoading(true);
-    const hint = await generateHint(subject, question, thinking, nextLevel);
+    const hint = await generateHint(subject, question, thinking, nextLevel, photo);
     setHints((prev) => [...prev, hint]);
     setLoading(false);
   };
@@ -75,6 +75,42 @@ export default function HintPage({
           </p>
         )}
       </div>
+
+      {/* 送った写真のプレビュー */}
+      {photo && (
+        <div
+          style={{
+            marginBottom: '16px',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: '3px solid #CE93D8',
+          }}
+        >
+          <img
+            src={photo}
+            alt="おくったしゃしん"
+            style={{
+              width: '100%',
+              display: 'block',
+              maxHeight: '180px',
+              objectFit: 'contain',
+              backgroundColor: '#F5F5F5',
+            }}
+          />
+          <div
+            style={{
+              padding: '6px 12px',
+              backgroundColor: '#F3E5F5',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              color: '#7B1FA2',
+              textAlign: 'center',
+            }}
+          >
+            📸 おくったしゃしん
+          </div>
+        </div>
+      )}
 
       {/* ヒント表示エリア */}
       <div
