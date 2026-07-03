@@ -1,97 +1,40 @@
 // ヒント生成サービス
-// AI APIを後から接続する場合、generateHint関数の中身を差し替えてください
+// Netlify Function経由でAnthropic Claude APIを呼び出す
+// API未接続時は仮のヒントを返す（フォールバック）
 
-// AIに送るシステムプロンプト（API接続時に使用）
-export const SYSTEM_PROMPT = `あなたは小学生向けのやさしい学習サポート先生です。
-答えを直接教えてはいけません。
-子供が自分で考えられるように、1回につき1つだけヒントを出してください。
-最終答え、計算結果、正解の選択肢は絶対に出さないでください。
-子供の努力をほめて、やさしい言葉で説明してください。
-ひらがなを多く使い、6歳でもわかる言葉で話してください。
-画像が送られた場合は、問題の内容を読み取ってヒントを出してください。
-画像から読み取った答えも絶対に教えないでください。`;
-
-// 教科ごとの仮ヒント（API未接続時に使用）
-const MOCK_HINTS = {
+// 教科ごとの仮ヒント（APIエラー時のフォールバック）
+const FALLBACK_HINTS = {
   さんすう: [
-    [
-      'すごいね！もんだいをよくよんでいるね。まず、もんだいにでてくる「すうじ」をぜんぶみつけてみよう！',
-      'いいかんじ！つぎは、そのすうじをつかって「なにをすればいいか」をかんがえてみよう。たしざん？ひきざん？',
-      'もうすこし！ゆびやおはじきをつかって、じっさいにかぞえてみるとわかりやすいよ！',
-    ],
-    [
-      'がんばっているね！もんだいの「ことば」をよくよんで、なにをきいているかたしかめてみよう！',
-      'いいね！もんだいにでてくるものを、えにかいてみるとわかりやすくなるよ！',
-      'あともうちょっと！じゅんばんにかんがえてみよう。さいしょにすることはなにかな？',
-    ],
+    'すごいね！まず、もんだいにでてくる「すうじ」をぜんぶみつけてみよう！',
+    'いいかんじ！つぎは「なにをすればいいか」をかんがえてみよう。たしざん？ひきざん？',
+    'もうすこし！ゆびやおはじきをつかって、じっさいにかぞえてみよう！',
   ],
   こくご: [
-    [
-      'よくもんだいをよんでいるね！まず、ぶんしょうをもういちど、ゆっくりよんでみよう！',
-      'いいかんがえだね！「だれが」「なにをした」をさがしてみよう！',
-      'もうすこし！わからないことばがあったら、そのまえとあとの「ことば」をみてみよう！',
-    ],
-    [
-      'がんばっているね！もんだいがきいていることを、もういちどたしかめてみよう！',
-      'いいぞ！ぶんしょうのなかから、こたえのヒントになりそうなところをさがしてみよう！',
-      'あともうちょっと！ぶんしょうのさいごのほうに、だいじなことがかいてあるかもしれないよ！',
-    ],
+    'よくがんばっているね！まず、ぶんしょうをゆっくりよんでみよう！',
+    'いいかんがえだね！「だれが」「なにをした」をさがしてみよう！',
+    'もうすこし！わからないことばのまえとあとをよんでみよう！',
   ],
   えいご: [
-    [
-      'すごい！えいごのもんだいにチャレンジしているね！まず、しっている「ことば」をさがしてみよう！',
-      'いいね！えいごは「おと」にしてよんでみると、わかることがあるよ！',
-      'もうすこし！にほんごでかんがえてから、えいごにしてみよう！',
-    ],
-    [
-      'がんばっているね！まず、もんだいのえをよくみてみよう！',
-      'いいぞ！ABCのなかから、にている「おと」のもじをさがしてみよう！',
-      'あともうちょっと！いままでならったことばで、にているものはないかな？',
-    ],
+    'すごい！まず、しっている「ことば」をさがしてみよう！',
+    'いいね！えいごを「おと」にしてよんでみよう！',
+    'もうすこし！にほんごでかんがえてから、えいごにしてみよう！',
   ],
   りか: [
-    [
-      'りかのもんだい、すごいね！まず、もんだいにでてくる「もの」をよくかんさつしてみよう！',
-      'いいかんがえ！「なぜそうなるの？」ってかんがえてみよう！',
-      'もうすこし！じっさいにためしてみたり、えにかいてかんがえてみよう！',
-    ],
-    [
-      'がんばっているね！まわりにある「もの」でにているものをさがしてみよう！',
-      'いいね！じゅんばんにおきることを、ひとつずつかんがえてみよう！',
-      'あともうちょっと！きのう・きょう・あした、みたいに「かわるもの」と「かわらないもの」をわけてみよう！',
-    ],
+    'りかのもんだい、すごいね！まず「もの」をよくかんさつしてみよう！',
+    'いいかんがえ！「なぜそうなるの？」ってかんがえてみよう！',
+    'もうすこし！えにかいてかんがえてみよう！',
   ],
   そのほか: [
-    [
-      'もんだいにチャレンジしてえらい！まず、もんだいがなにをきいているか、じぶんのことばでいってみよう！',
-      'いいかんがえだね！もんだいをちいさくわけて、ひとつずつかんがえてみよう！',
-      'もうすこし！にているもんだいをまえにやったことない？おもいだしてみよう！',
-    ],
-    [
-      'がんばっているね！まず、わかっていることをぜんぶかきだしてみよう！',
-      'いいぞ！わかっていることと、わからないことをわけてみよう！',
-      'あともうちょっと！せんせいやおうちのひとに、もんだいのいみをきいてみてもいいんだよ！',
-    ],
+    'もんだいにチャレンジしてえらい！なにをきいているか、じぶんのことばでいってみよう！',
+    'いいかんがえだね！もんだいをちいさくわけて、ひとつずつかんがえてみよう！',
+    'もうすこし！にているもんだいをまえにやったことない？おもいだしてみよう！',
   ],
 };
 
-// 写真付きの場合の仮ヒント（API未接続時に使用）
-const MOCK_PHOTO_HINTS = [
-  [
-    'しゃしんをおくってくれてありがとう！えらいね！まず、しゃしんのもんだいをゆっくりよんでみよう。どんなもんだいかな？',
-    'いいね！しゃしんのもんだいで「きかれていること」はなにかな？もういちどよくみてみよう！',
-    'もうすこし！しゃしんにかいてあるすうじやことばを、ノートにかきうつしてみよう。かくとわかりやすくなるよ！',
-  ],
-  [
-    'しゃしんをみせてくれたね！すごい！もんだいのなかで、いちばんだいじな「ことば」はどれかな？さがしてみよう！',
-    'いいかんがえ！もんだいを「じぶんのことば」でいいなおしてみよう。どういうもんだいかな？',
-    'もうすこし！にたようなもんだいを、まえにやったことない？おもいだしてみよう！',
-  ],
-];
-
 /**
  * ヒントを生成する関数
- * AI APIを接続する場合、この関数の中身を差し替えてください
+ * Netlify Function（/api/hint）経由でClaude APIを呼び出す
+ * APIが使えない場合はフォールバックの仮ヒントを返す
  *
  * @param {string} subject - 教科名
  * @param {string} question - 問題の内容（テキスト）
@@ -101,52 +44,27 @@ const MOCK_PHOTO_HINTS = [
  * @returns {Promise<string>} ヒントの文字列
  */
 export async function generateHint(subject, question, thinking, hintLevel, photo = null) {
-  // --- AI API接続時はここを差し替え ---
-  // 写真付きの場合はマルチモーダルAPIを使用
-  // const content = [];
-  // if (photo) {
-  //   content.push({
-  //     type: 'image',
-  //     source: {
-  //       type: 'base64',
-  //       media_type: photo.split(';')[0].split(':')[1],
-  //       data: photo.split(',')[1],
-  //     },
-  //   });
-  // }
-  // content.push({
-  //   type: 'text',
-  //   text: `教科: ${subject}\n問題: ${question || '（写真を見てください）'}\n考えたこと: ${thinking}\nヒントレベル: ${hintLevel + 1}回目のヒントをください`,
-  // });
-  //
-  // const response = await fetch(import.meta.env.VITE_AI_API_URL, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Authorization': `Bearer ${import.meta.env.VITE_AI_API_KEY}`,
-  //   },
-  //   body: JSON.stringify({
-  //     system: SYSTEM_PROMPT,
-  //     messages: [{ role: 'user', content }],
-  //   }),
-  // });
-  // const data = await response.json();
-  // return data.choices[0].message.content;
-  // --- ここまで ---
+  try {
+    const response = await fetch('/api/hint', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, question, thinking, hintLevel, photo }),
+    });
 
-  // 仮のヒント返答（API未接続時）
-  await new Promise((resolve) => setTimeout(resolve, 800));
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
 
-  // 写真がある場合は写真用のヒントを返す
-  if (photo && !question.trim()) {
-    const hintSet = MOCK_PHOTO_HINTS[Math.floor(Math.random() * MOCK_PHOTO_HINTS.length)];
-    const clampedLevel = Math.min(hintLevel, hintSet.length - 1);
-    return hintSet[clampedLevel];
+    const data = await response.json();
+    return data.hint;
+  } catch (error) {
+    console.warn('AI API unavailable, using fallback hints:', error.message);
+    return getFallbackHint(subject, hintLevel);
   }
+}
 
-  const subjectHints = MOCK_HINTS[subject] || MOCK_HINTS['そのほか'];
-  const hintSet = subjectHints[Math.floor(Math.random() * subjectHints.length)];
-  const clampedLevel = Math.min(hintLevel, hintSet.length - 1);
-
-  return hintSet[clampedLevel];
+function getFallbackHint(subject, hintLevel) {
+  const hints = FALLBACK_HINTS[subject] || FALLBACK_HINTS['そのほか'];
+  const clampedLevel = Math.min(hintLevel, hints.length - 1);
+  return hints[clampedLevel];
 }
