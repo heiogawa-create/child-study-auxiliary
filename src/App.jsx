@@ -5,9 +5,14 @@ import InputPage from './pages/InputPage';
 import HintPage from './pages/HintPage';
 import RewardPage from './pages/RewardPage';
 import EvolutionPage from './pages/EvolutionPage';
+import GradeSelectPage from './pages/GradeSelectPage';
+import UnitSelectPage from './pages/UnitSelectPage';
+import QuizPage from './pages/QuizPage';
 import { useStamps } from './hooks/useStamps';
 import { useCharacter } from './hooks/useCharacter';
 import { getLevel } from './data/characters';
+
+const UNIT_BASED_SUBJECTS = ['さんすう'];
 
 export default function App() {
   const [page, setPage] = useState('home');
@@ -16,6 +21,8 @@ export default function App() {
   const [thinking, setThinking] = useState('');
   const [photo, setPhoto] = useState(null);
   const [evolution, setEvolution] = useState(null);
+  const [gradeId, setGradeId] = useState('');
+  const [unit, setUnit] = useState(null);
   const { stamps, addStamp, todayCount, totalCount } = useStamps();
   const { characterId, selectCharacter, hasCharacter } = useCharacter();
   const prevLevelRef = useRef(getLevel(totalCount));
@@ -32,7 +39,17 @@ export default function App() {
 
   const handleSelectSubject = (selectedSubject) => {
     setSubject(selectedSubject);
-    setPage('input');
+    setPage(UNIT_BASED_SUBJECTS.includes(selectedSubject) ? 'grade' : 'input');
+  };
+
+  const handleSelectGrade = (selectedGradeId) => {
+    setGradeId(selectedGradeId);
+    setPage('unit');
+  };
+
+  const handleSelectUnit = (selectedUnit) => {
+    setUnit(selectedUnit);
+    setPage('quiz');
   };
 
   const handleSubmitQuestion = (q, t, p) => {
@@ -55,6 +72,8 @@ export default function App() {
     setQuestion('');
     setThinking('');
     setPhoto(null);
+    setGradeId('');
+    setUnit(null);
   };
 
   const handleGoReward = () => {
@@ -143,6 +162,36 @@ export default function App() {
           onSelectSubject={handleSelectSubject}
           totalStamps={totalCount}
           todayStamps={todayCount}
+        />
+      )}
+      {page === 'grade' && (
+        <GradeSelectPage
+          subject={subject}
+          characterId={characterId}
+          totalStamps={totalCount}
+          onSelectGrade={handleSelectGrade}
+          onBack={handleGoHome}
+        />
+      )}
+      {page === 'unit' && (
+        <UnitSelectPage
+          subject={subject}
+          gradeId={gradeId}
+          characterId={characterId}
+          totalStamps={totalCount}
+          onSelectUnit={handleSelectUnit}
+          onBack={() => setPage('grade')}
+        />
+      )}
+      {page === 'quiz' && unit && (
+        <QuizPage
+          subject={subject}
+          unit={unit}
+          characterId={characterId}
+          totalStamps={totalCount}
+          onEarnStamp={handleEarnStamp}
+          onFinish={handleGoHome}
+          onBack={() => setPage('unit')}
         />
       )}
       {page === 'input' && (
