@@ -2,7 +2,7 @@ import CharacterAvatar from '../components/CharacterAvatar';
 import ActionButton from '../components/ActionButton';
 import { getEvolution, getLevel, getNextLevelStamps, CHARACTER_TYPES, LEVELS } from '../data/characters';
 
-export default function RewardPage({ characterId, stamps, totalStamps, onGoHome }) {
+export default function RewardPage({ characterId, stamps, totalStamps, onGoHome, onChangeCharacter }) {
   const evo = getEvolution(characterId, totalStamps);
   const level = getLevel(totalStamps);
   const type = CHARACTER_TYPES.find((c) => c.id === characterId) || CHARACTER_TYPES[0];
@@ -129,9 +129,16 @@ export default function RewardPage({ characterId, stamps, totalStamps, onGoHome 
         ぜんぶで <strong style={{ fontSize: '1.3rem', color: '#FF7043' }}>{stamps.length}</strong> こ あつめたよ！
       </div>
 
-      <ActionButton onClick={onGoHome} color="#42A5F5">
-        🏠 ホームにもどる
-      </ActionButton>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <ActionButton onClick={onGoHome} color="#42A5F5">
+          🏠 ホームにもどる
+        </ActionButton>
+        {onChangeCharacter && (
+          <ActionButton onClick={onChangeCharacter} color="#AB47BC" variant="outline">
+            🔄 キャラクターをかえる
+          </ActionButton>
+        )}
+      </div>
     </div>
   );
 }
