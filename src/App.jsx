@@ -80,6 +80,15 @@ export default function App() {
     setPage('reward');
   };
 
+  const handleGoCharacterChange = () => {
+    setPage('characterChange');
+  };
+
+  const handleChangeCharacter = (id) => {
+    selectCharacter(id);
+    setPage('home');
+  };
+
   const handleEarnStamp = () => {
     const prevLevel = prevLevelRef.current;
     addStamp();
@@ -222,6 +231,15 @@ export default function App() {
           stamps={stamps}
           totalStamps={totalCount}
           onGoHome={handleGoHome}
+          onChangeCharacter={handleGoCharacterChange}
+        />
+      )}
+      {page === 'characterChange' && (
+        <CharacterSelectPage
+          onSelect={handleChangeCharacter}
+          currentCharacterId={characterId}
+          totalStamps={totalCount}
+          onBack={() => setPage('reward')}
         />
       )}
 
