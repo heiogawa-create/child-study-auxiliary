@@ -1,5 +1,18 @@
+import express from 'express';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json({ limit: '10mb' }));
+
+// 静的ファイル配信（ビルド済みフロントエンド）
+app.use(express.static(join(__dirname, 'dist')));
+
+// ヒント生成API
 const SYSTEM_PROMPT = `あなたは小学生向けのやさしい学習サポート先生です。
 
 【絶対に守るルール】
@@ -19,38 +32,16 @@ const SYSTEM_PROMPT = `あなたは小学生向けのやさしい学習サポー
 - 画像から読み取った答えも絶対に教えないでください
 - 子供がどこまで解いているか、途中の書き込みも読み取ってください`;
 
-export default async function handler(req) {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
-  }
-
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-    });
-  }
-
+app.post('/api/hint', async (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return new Response(
-      JSON.stringify({ error: 'ANTHROPIC_API_KEY が設定されていません' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return res.status(500).json({ error: 'ANTHROPIC_API_KEY が設定されていません' });
   }
 
   try {
-    const { subject, question, thinking, hintLevel, photo } = await req.json();
-
+    const { subject, question, thinking, hintLevel, photo } = req.body;
     const content = [];
 
-    // 写真がある場合はマルチモーダルで送信
     if (photo) {
       const [meta, base64Data] = photo.split(',');
       const mediaType = meta.split(';')[0].split(':')[1] || 'image/jpeg';
@@ -89,20 +80,18 @@ export default async function handler(req) {
     });
 
     const hint = response.content[0]?.text || 'ごめんね、ヒントがうまくつくれなかったよ。もういちどためしてみてね！';
-
-    return new Response(JSON.stringify({ hint }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    res.json({ hint });
   } catch (error) {
     console.error('Hint generation error:', error);
-    return new Response(
-      JSON.stringify({ error: 'ヒントの生成に失敗しました', details: error.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    res.status(500).json({ error: 'ヒントの生成に失敗しました', details: error.message });
   }
-}
+});
 
-export const config = {
-  path: '/api/hint',
-};
+// SPA用フォールバック
+app.get('/{*splat}', (req, res) => {
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
