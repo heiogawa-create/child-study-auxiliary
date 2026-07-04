@@ -1,45 +1,97 @@
-import TeacherCharacter from '../components/TeacherCharacter';
+import CharacterAvatar from '../components/CharacterAvatar';
 import SubjectButton from '../components/SubjectButton';
+import { getEvolution, getLevel, getNextLevelStamps } from '../data/characters';
 
 const SUBJECTS = ['さんすう', 'こくご', 'えいご', 'りか', 'そのほか'];
 
-export default function HomePage({ onSelectSubject, totalStamps, todayStamps }) {
+export default function HomePage({ characterId, onSelectSubject, totalStamps, todayStamps }) {
+  const evo = getEvolution(characterId, totalStamps);
+  const level = getLevel(totalStamps);
+  const nextStamps = getNextLevelStamps(totalStamps);
+
   return (
     <div style={{ padding: '24px 16px', maxWidth: '480px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-        <TeacherCharacter size={130} />
+        <CharacterAvatar typeId={characterId} totalStamps={totalStamps} size={130} />
+
+        {/* キャラ名・レベル */}
+        <p style={{ fontSize: '0.85rem', color: '#FF7043', fontWeight: 700, marginTop: '4px' }}>
+          Lv.{level} {evo.name}（{evo.title}）
+        </p>
+
         <h1
           style={{
             fontSize: '2rem',
             fontWeight: 800,
             color: '#FF7043',
-            margin: '8px 0 4px',
+            margin: '4px 0',
           }}
         >
           べんきょうヒント
         </h1>
-        <p style={{ fontSize: '1.05rem', color: '#757575', marginBottom: '8px' }}>
-          こたえじゃなくて、ヒントでおうえんするよ！
-        </p>
-      </div>
 
-      {/* スタンプ表示 */}
-      {totalStamps > 0 && (
+        {/* キャラのセリフ */}
         <div
           style={{
-            textAlign: 'center',
-            padding: '10px 16px',
-            backgroundColor: 'rgba(255,255,255,0.7)',
-            borderRadius: '12px',
-            marginBottom: '20px',
+            display: 'inline-block',
+            padding: '8px 16px',
+            backgroundColor: 'rgba(255,255,255,0.8)',
+            borderRadius: '16px',
             fontSize: '0.95rem',
+            fontWeight: 700,
+            color: '#5D4037',
+            marginBottom: '4px',
           }}
         >
-          ⭐ きょうのスタンプ: <strong>{todayStamps}こ</strong>
-          {'　'}
-          🏆 ぜんぶで: <strong>{totalStamps}こ</strong>
+          「{evo.message}」
         </div>
-      )}
+      </div>
+
+      {/* スタンプ・進化バー */}
+      <div
+        style={{
+          padding: '12px 16px',
+          backgroundColor: 'rgba(255,255,255,0.7)',
+          borderRadius: '12px',
+          marginBottom: '20px',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px' }}>
+          <span>⭐ きょう: <strong>{todayStamps}こ</strong></span>
+          <span>🏆 ぜんぶ: <strong>{totalStamps}こ</strong></span>
+        </div>
+
+        {nextStamps !== null ? (
+          <>
+            <div
+              style={{
+                height: '12px',
+                backgroundColor: '#E0E0E0',
+                borderRadius: '6px',
+                overflow: 'hidden',
+                marginBottom: '4px',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${Math.min((totalStamps / nextStamps) * 100, 100)}%`,
+                  backgroundColor: '#FFB74D',
+                  borderRadius: '6px',
+                  transition: 'width 0.5s ease',
+                }}
+              />
+            </div>
+            <p style={{ fontSize: '0.8rem', color: '#9E9E9E', textAlign: 'right' }}>
+              つぎのしんかまで あと <strong style={{ color: '#FF7043' }}>{nextStamps - totalStamps}</strong>こ
+            </p>
+          </>
+        ) : (
+          <p style={{ fontSize: '0.85rem', color: '#FF7043', fontWeight: 700, textAlign: 'center' }}>
+            ✨ さいこうレベル！すごい！
+          </p>
+        )}
+      </div>
 
       {/* 教科ボタン */}
       <p

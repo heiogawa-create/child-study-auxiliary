@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import TeacherCharacter from '../components/TeacherCharacter';
+import CharacterAvatar from '../components/CharacterAvatar';
 import ActionButton from '../components/ActionButton';
 import PhotoCapture from '../components/PhotoCapture';
 
@@ -11,7 +11,7 @@ const SUBJECT_ICONS = {
   そのほか: '📝',
 };
 
-export default function InputPage({ subject, onSubmit, onBack }) {
+export default function InputPage({ subject, characterId, totalStamps, onSubmit, onBack }) {
   const [question, setQuestion] = useState('');
   const [thinking, setThinking] = useState('');
   const [photo, setPhoto] = useState(null);
@@ -43,41 +43,23 @@ export default function InputPage({ subject, onSubmit, onBack }) {
       </button>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <TeacherCharacter size={100} />
+        <CharacterAvatar typeId={characterId} totalStamps={totalStamps} size={100} />
         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#5D4037' }}>
           {SUBJECT_ICONS[subject]} {subject}のもんだい
         </h2>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* 写真撮影 */}
         <PhotoCapture photo={photo} onPhotoChange={setPhoto} />
 
-        {/* 区切り線 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            color: '#BDBDBD',
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#BDBDBD' }}>
           <div style={{ flex: 1, height: '2px', backgroundColor: '#E0E0E0' }} />
           <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>または</span>
           <div style={{ flex: 1, height: '2px', backgroundColor: '#E0E0E0' }} />
         </div>
 
-        {/* テキスト入力 */}
         <div>
-          <label
-            style={{
-              display: 'block',
-              fontSize: '1.05rem',
-              fontWeight: 700,
-              marginBottom: '6px',
-              color: '#5D4037',
-            }}
-          >
+          <label style={{ display: 'block', fontSize: '1.05rem', fontWeight: 700, marginBottom: '6px', color: '#5D4037' }}>
             📝 もんだいをかいてね
           </label>
           <textarea
@@ -86,14 +68,8 @@ export default function InputPage({ subject, onSubmit, onBack }) {
             placeholder="ここにもんだいをかいてね..."
             rows={3}
             style={{
-              width: '100%',
-              padding: '14px',
-              fontSize: '1.05rem',
-              fontFamily: 'inherit',
-              border: '3px solid #E0E0E0',
-              borderRadius: '12px',
-              resize: 'vertical',
-              outline: 'none',
+              width: '100%', padding: '14px', fontSize: '1.05rem', fontFamily: 'inherit',
+              border: '3px solid #E0E0E0', borderRadius: '12px', resize: 'vertical', outline: 'none',
               transition: 'border-color 0.2s',
             }}
             onFocus={(e) => (e.target.style.borderColor = '#42A5F5')}
@@ -101,17 +77,8 @@ export default function InputPage({ subject, onSubmit, onBack }) {
           />
         </div>
 
-        {/* どこまで考えたか */}
         <div>
-          <label
-            style={{
-              display: 'block',
-              fontSize: '1.05rem',
-              fontWeight: 700,
-              marginBottom: '6px',
-              color: '#5D4037',
-            }}
-          >
+          <label style={{ display: 'block', fontSize: '1.05rem', fontWeight: 700, marginBottom: '6px', color: '#5D4037' }}>
             💭 どこまでかんがえた？（なくてもOK）
           </label>
           <textarea
@@ -120,14 +87,8 @@ export default function InputPage({ subject, onSubmit, onBack }) {
             placeholder="じぶんでかんがえたことをかいてね..."
             rows={3}
             style={{
-              width: '100%',
-              padding: '14px',
-              fontSize: '1.05rem',
-              fontFamily: 'inherit',
-              border: '3px solid #E0E0E0',
-              borderRadius: '12px',
-              resize: 'vertical',
-              outline: 'none',
+              width: '100%', padding: '14px', fontSize: '1.05rem', fontFamily: 'inherit',
+              border: '3px solid #E0E0E0', borderRadius: '12px', resize: 'vertical', outline: 'none',
               transition: 'border-color 0.2s',
             }}
             onFocus={(e) => (e.target.style.borderColor = '#42A5F5')}
@@ -135,11 +96,7 @@ export default function InputPage({ subject, onSubmit, onBack }) {
           />
         </div>
 
-        <ActionButton
-          onClick={handleSubmit}
-          color="#FF7043"
-          disabled={!canSubmit}
-        >
+        <ActionButton onClick={handleSubmit} color="#FF7043" disabled={!canSubmit}>
           💡 ヒントをもらう
         </ActionButton>
       </div>
