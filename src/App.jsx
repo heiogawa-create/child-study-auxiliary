@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import CharacterSelectPage from './pages/CharacterSelectPage';
 import HomePage from './pages/HomePage';
 import InputPage from './pages/InputPage';
 import HintPage from './pages/HintPage';
 import RewardPage from './pages/RewardPage';
+import EvolutionPage from './pages/EvolutionPage';
 import { useStamps } from './hooks/useStamps';
+import { useCharacter } from './hooks/useCharacter';
+import { getLevel } from './data/characters';
 
 export default function App() {
   const [page, setPage] = useState('home');
@@ -11,7 +15,20 @@ export default function App() {
   const [question, setQuestion] = useState('');
   const [thinking, setThinking] = useState('');
   const [photo, setPhoto] = useState(null);
+  const [evolution, setEvolution] = useState(null);
   const { stamps, addStamp, todayCount, totalCount } = useStamps();
+  const { characterId, selectCharacter, hasCharacter } = useCharacter();
+  const prevLevelRef = useRef(getLevel(totalCount));
+
+  // キャラ未選択なら選択画面
+  if (!hasCharacter) {
+    return (
+      <div style={{ flex: 1, paddingBottom: '80px' }}>
+        <CharacterSelectPage onSelect={selectCharacter} />
+        <AppStyles />
+      </div>
+    );
+  }
 
   const handleSelectSubject = (selectedSubject) => {
     setSubject(selectedSubject);
@@ -44,8 +61,34 @@ export default function App() {
     setPage('reward');
   };
 
+  const handleEarnStamp = () => {
+    const prevLevel = prevLevelRef.current;
+    addStamp();
+    const newTotal = totalCount + 1;
+    const newLevel = getLevel(newTotal);
+
+    if (newLevel > prevLevel) {
+      setEvolution({ newLevel, totalStamps: newTotal });
+    }
+    prevLevelRef.current = newLevel;
+  };
+
+  const handleCloseEvolution = () => {
+    setEvolution(null);
+  };
+
   return (
     <div style={{ flex: 1, paddingBottom: '80px' }}>
+      {/* 進化演出 */}
+      {evolution && (
+        <EvolutionPage
+          characterId={characterId}
+          newLevel={evolution.newLevel}
+          totalStamps={evolution.totalStamps}
+          onClose={handleCloseEvolution}
+        />
+      )}
+
       {/* ヘッダーバー */}
       <header
         style={{
@@ -96,6 +139,7 @@ export default function App() {
       {/* ページ切り替え */}
       {page === 'home' && (
         <HomePage
+          characterId={characterId}
           onSelectSubject={handleSelectSubject}
           totalStamps={totalCount}
           todayStamps={todayCount}
@@ -104,6 +148,8 @@ export default function App() {
       {page === 'input' && (
         <InputPage
           subject={subject}
+          characterId={characterId}
+          totalStamps={totalCount}
           onSubmit={handleSubmitQuestion}
           onBack={handleGoHome}
         />
@@ -114,26 +160,42 @@ export default function App() {
           question={question}
           thinking={thinking}
           photo={photo}
+          characterId={characterId}
+          totalStamps={totalCount}
           onNewQuestion={handleNewQuestion}
           onGoHome={handleGoHome}
-          onEarnStamp={addStamp}
+          onEarnStamp={handleEarnStamp}
         />
       )}
       {page === 'reward' && (
-        <RewardPage stamps={stamps} onGoHome={handleGoHome} />
+        <RewardPage
+          characterId={characterId}
+          stamps={stamps}
+          totalStamps={totalCount}
+          onGoHome={handleGoHome}
+        />
       )}
 
-      {/* アニメーション用CSS */}
-      <style>{`
-        @keyframes bounce {
-          from { transform: translateY(0); }
-          to { transform: translateY(-6px); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+      <AppStyles />
     </div>
+  );
+}
+
+function AppStyles() {
+  return (
+    <style>{`
+      @keyframes bounce {
+        from { transform: translateY(0); }
+        to { transform: translateY(-6px); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+    `}</style>
   );
 }
