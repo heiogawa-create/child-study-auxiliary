@@ -28,6 +28,10 @@ function FairyAvatar({ level }) {
       </>}
       {/* からだ */}
       <ellipse cx="100" cy="155" rx="30" ry="25" fill={c.dress} />
+      {/* フード（ココ・レベル2） */}
+      {level === 2 && (
+        <path d="M 58 80 Q 50 28 100 22 Q 150 28 142 80 Q 128 50 100 50 Q 72 50 58 80 Z" fill={c.dress} />
+      )}
       {/* かお */}
       <circle cx="100" cy="95" r="42" fill={c.body} />
       {/* ほっぺ */}
@@ -40,6 +44,18 @@ function FairyAvatar({ level }) {
       <circle cx="117" cy="89" r="2" fill="white" />
       {/* くち */}
       <path d="M 90 110 Q 100 118 110 110" fill="none" stroke="#5D4037" strokeWidth="2" strokeLinecap="round" />
+      {/* うずまき・はっぱ・ほん（ココ・レベル2） */}
+      {level === 2 && (
+        <>
+          <path d="M 100 22 Q 94 8 104 5 Q 116 3 113 13 Q 111 19 103 16" fill="none" stroke={c.dress} strokeWidth="3.5" strokeLinecap="round" />
+          <path d="M 118 16 L 142 4 Q 148 18 132 29 Z" fill="#81C784" stroke="#558B2F" strokeWidth="1" />
+          <line x1="130" y1="14" x2="122" y2="23" stroke="#558B2F" strokeWidth="1" />
+          <rect x="80" y="140" width="40" height="28" rx="3" fill="#2E7D32" />
+          <rect x="97" y="140" width="6" height="28" fill="#1B5E20" />
+          <path d="M 88 150 L 92 144 L 96 150 L 92 156 Z" fill="#A5D6A7" />
+          <path d="M 104 150 L 108 144 L 112 150 L 108 156 Z" fill="#A5D6A7" />
+        </>
+      )}
       {/* ステッキ（レベル3+） */}
       {level >= 3 && <>
         <line x1="135" y1="130" x2="155" y2="75" stroke="#FFB300" strokeWidth="3" strokeLinecap="round" />
