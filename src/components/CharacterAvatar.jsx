@@ -24,11 +24,11 @@ function FairyAvatar({ level }) {
     <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       {level >= 3 && <circle cx="100" cy="100" r="90" fill={c.glow} opacity="0.5" />}
       {level >= 4 && <>
-        <circle cx="60" cy="30" r="4" fill="#FFD54F" />
-        <circle cx="140" cy="40" r="3" fill="#FFD54F" />
-        <circle cx="45" cy="70" r="3" fill="#FFD54F" />
-        <circle cx="155" cy="65" r="4" fill="#FFD54F" />
-        <circle cx="100" cy="20" r="5" fill="#FFD54F" />
+        <path d={starPath(30, 40, 5, 2)} fill="#FFD54F" opacity="0.8" />
+        <path d={starPath(172, 55, 4, 1.5)} fill="#FFD54F" opacity="0.7" />
+        <path d={starPath(25, 110, 4, 1.5)} fill="#FFD54F" opacity="0.7" />
+        <path d={starPath(178, 130, 5, 2)} fill="#FFD54F" opacity="0.8" />
+        <path d={starPath(100, 12, 6, 2.5)} fill="#FFD54F" opacity="0.8" />
       </>}
       {/* はね */}
       <ellipse cx="60" cy="90" rx="25" ry={level >= 3 ? 40 : 30} fill={c.wing} opacity="0.7" transform="rotate(-15 60 90)" />
@@ -46,6 +46,21 @@ function FairyAvatar({ level }) {
       {/* フード（キラ・レベル3） */}
       {level === 3 && (
         <path d="M 55 82 Q 45 26 100 18 Q 155 26 145 82 Q 130 48 100 48 Q 70 48 55 82 Z" fill={c.dress} />
+      )}
+      {/* こうりん（ソラ・レベル4） */}
+      {level === 4 && (
+        <circle cx="100" cy="70" r="55" fill="none" stroke="#FFD54F" strokeWidth="2.5" opacity="0.6" />
+      )}
+      {/* ながいかみ（ソラ・レベル4） */}
+      {level === 4 && (
+        <>
+          <path d="M 55 85 Q 35 130 45 175 Q 55 165 60 140 Q 58 110 65 90 Z" fill="#FFF9E1" stroke="#FFECB3" strokeWidth="1" />
+          <path d="M 145 85 Q 165 130 155 175 Q 145 165 140 140 Q 142 110 135 90 Z" fill="#FFF9E1" stroke="#FFECB3" strokeWidth="1" />
+        </>
+      )}
+      {/* フード（ソラ・レベル4） */}
+      {level === 4 && (
+        <path d="M 52 84 Q 42 24 100 15 Q 158 24 148 84 Q 132 46 100 46 Q 68 46 52 84 Z" fill="#FDFAF6" stroke={c.dress} strokeWidth="2" />
       )}
       {/* かお */}
       <circle cx="100" cy="95" r="42" fill={c.body} />
@@ -81,15 +96,22 @@ function FairyAvatar({ level }) {
           <path d={starPath(42, 120, 4, 1.5)} fill="#FFD54F" opacity="0.7" />
         </>
       )}
-      {/* ステッキ（レベル3+） */}
-      {level >= 3 && <>
+      {/* ステッキ（レベル3） */}
+      {level === 3 && <>
         <line x1="135" y1="130" x2="155" y2="75" stroke="#FFB300" strokeWidth="3" strokeLinecap="round" />
         <rect x="147" y="118" width="8" height="6" rx="2" fill="#42A5F5" />
         <path d={starPath(155, 68, 12, 5)} fill="#FFD54F" stroke="#FFB300" strokeWidth="1.5" />
       </>}
+      {/* おうじょのつえ（ソラ・レベル4） */}
+      {level === 4 && <>
+        <line x1="135" y1="132" x2="152" y2="72" stroke="#FFD54F" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="152" cy="58" r="13" fill="none" stroke="#FFD54F" strokeWidth="3" />
+        <path d={starPath(152, 56, 5, 2.2)} fill="#4FC3F7" />
+      </>}
       {/* かんむり（レベル4） */}
       {level >= 4 && <>
-        <path d="M 75 58 L 85 40 L 95 55 L 100 35 L 105 55 L 115 40 L 125 58" fill="#FFD54F" stroke="#FFB300" strokeWidth="1.5" />
+        <path d="M 72 55 L 82 34 L 93 52 L 100 28 L 107 52 L 118 34 L 128 55" fill="#FFD54F" stroke="#FFB300" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d={starPath(100, 30, 7, 3)} fill="#4FC3F7" stroke="#0288D1" strokeWidth="1" />
       </>}
     </svg>
   );
