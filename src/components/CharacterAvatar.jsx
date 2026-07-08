@@ -1,5 +1,16 @@
 import { getLevel } from '../data/characters';
 
+// 5ぼうのほしのpathをつくる
+function starPath(cx, cy, outerR, innerR) {
+  const points = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? outerR : innerR;
+    const angle = (Math.PI / 5) * i - Math.PI / 2;
+    points.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
+  }
+  return `M ${points.join(' L ')} Z`;
+}
+
 // キャラクタータイプ別・レベル別のSVGアバター
 function FairyAvatar({ level }) {
   const colors = [
@@ -32,6 +43,10 @@ function FairyAvatar({ level }) {
       {level === 2 && (
         <path d="M 58 80 Q 50 28 100 22 Q 150 28 142 80 Q 128 50 100 50 Q 72 50 58 80 Z" fill={c.dress} />
       )}
+      {/* フード（キラ・レベル3） */}
+      {level === 3 && (
+        <path d="M 55 82 Q 45 26 100 18 Q 155 26 145 82 Q 130 48 100 48 Q 70 48 55 82 Z" fill={c.dress} />
+      )}
       {/* かお */}
       <circle cx="100" cy="95" r="42" fill={c.body} />
       {/* ほっぺ */}
@@ -56,11 +71,21 @@ function FairyAvatar({ level }) {
           <path d="M 104 150 L 108 144 L 112 150 L 108 156 Z" fill="#A5D6A7" />
         </>
       )}
+      {/* うずまき・ほしのかざり・きらきら（キラ・レベル3） */}
+      {level === 3 && (
+        <>
+          <path d="M 100 18 Q 94 4 104 1 Q 116 -1 113 9 Q 111 15 103 12" fill="none" stroke={c.dress} strokeWidth="3.5" strokeLinecap="round" />
+          <path d={starPath(122, 40, 11, 5)} fill="#FFD54F" stroke="#FFB300" strokeWidth="1" />
+          <path d={starPath(50, 45, 5, 2)} fill="#FFD54F" opacity="0.8" />
+          <path d={starPath(158, 100, 6, 2.5)} fill="#FFD54F" opacity="0.8" />
+          <path d={starPath(42, 120, 4, 1.5)} fill="#FFD54F" opacity="0.7" />
+        </>
+      )}
       {/* ステッキ（レベル3+） */}
       {level >= 3 && <>
         <line x1="135" y1="130" x2="155" y2="75" stroke="#FFB300" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="155" cy="70" r="8" fill="#FFD54F" />
-        <text x="155" y="74" textAnchor="middle" fontSize="10">✦</text>
+        <rect x="147" y="118" width="8" height="6" rx="2" fill="#42A5F5" />
+        <path d={starPath(155, 68, 12, 5)} fill="#FFD54F" stroke="#FFB300" strokeWidth="1.5" />
       </>}
       {/* かんむり（レベル4） */}
       {level >= 4 && <>
