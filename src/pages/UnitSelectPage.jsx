@@ -21,7 +21,9 @@ export default function UnitSelectPage({ subject, gradeId, characterId, totalSta
         <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#5D4037' }}>
           📚 たんげんを えらんでね
         </h2>
-        <p style={{ fontSize: '0.85rem', color: '#9E9E9E' }}>1たんげん 20もん あるよ</p>
+        <p style={{ fontSize: '0.85rem', color: '#9E9E9E' }}>
+          1たんげん 40もん。ひらくたびに もんだいが かわるよ
+        </p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -47,8 +49,16 @@ export default function UnitSelectPage({ subject, gradeId, characterId, totalSta
               boxShadow: '0 3px 8px rgba(0,0,0,0.08)',
             }}
           >
-            <span style={{ fontSize: '1.5rem' }}>{unit.icon}</span>
-            {unit.name}
+            <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>{unit.icon}</span>
+            <span style={{ flex: 1 }}>
+              <span style={{ display: 'block' }}>{unit.name}</span>
+              <span style={{ display: 'block', marginTop: '5px', fontSize: '0.75rem', lineHeight: 1.45, color: '#8D6E63', fontWeight: 500 }}>
+                {unit.skills}
+              </span>
+              <span style={{ display: 'inline-block', marginTop: '7px', padding: '2px 8px', borderRadius: '10px', backgroundColor: '#FFF3E0', color: '#E65100', fontSize: '0.7rem' }}>
+                {unit.domain} ・ {unit.questionCount}もん
+              </span>
+            </span>
           </button>
         ))}
       </div>

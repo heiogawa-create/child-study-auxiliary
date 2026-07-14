@@ -1,13 +1,15 @@
 // キャラクタータイプと進化レベルの定義
 // レベルアップ条件: スタンプの合計数
 
-export const LEVEL_THRESHOLDS = [0, 5, 15, 30];
+// 1問正解ごとにスタンプが1つ増える。40問ドリルに合わせ、
+// 早すぎず達成感も得られる進化ペースにしている。
+export const LEVEL_THRESHOLDS = [0, 20, 60, 150];
 
 export const LEVELS = [
   { level: 1, label: 'レベル1', minStamps: 0 },
-  { level: 2, label: 'レベル2', minStamps: 5 },
-  { level: 3, label: 'レベル3', minStamps: 15 },
-  { level: 4, label: 'レベル4', minStamps: 30 },
+  { level: 2, label: 'レベル2', minStamps: 20 },
+  { level: 3, label: 'レベル3', minStamps: 60 },
+  { level: 4, label: 'レベル4', minStamps: 150 },
 ];
 
 export function getLevel(totalStamps) {
@@ -21,6 +23,25 @@ export function getNextLevelStamps(totalStamps) {
   const currentLevel = getLevel(totalStamps);
   if (currentLevel >= 4) return null;
   return LEVELS[currentLevel].minStamps;
+}
+
+export function getLevelProgress(totalStamps) {
+  const level = getLevel(totalStamps);
+  const currentMinimum = LEVELS[level - 1].minStamps;
+  if (level >= LEVELS.length) {
+    return { level, currentMinimum, nextMinimum: null, remaining: 0, percentage: 100 };
+  }
+
+  const nextMinimum = LEVELS[level].minStamps;
+  const earnedInLevel = totalStamps - currentMinimum;
+  const levelSpan = nextMinimum - currentMinimum;
+  return {
+    level,
+    currentMinimum,
+    nextMinimum,
+    remaining: Math.max(0, nextMinimum - totalStamps),
+    percentage: Math.min(100, Math.max(0, (earnedInLevel / levelSpan) * 100)),
+  };
 }
 
 export const CHARACTER_TYPES = [
