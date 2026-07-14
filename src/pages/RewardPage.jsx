@@ -1,6 +1,6 @@
 import CharacterAvatar from '../components/CharacterAvatar';
 import ActionButton from '../components/ActionButton';
-import { getEvolution, getLevel, getNextLevelStamps, CHARACTER_TYPES, LEVELS } from '../data/characters';
+import { getEvolution, getLevel, CHARACTER_TYPES, LEVELS } from '../data/characters';
 
 export default function RewardPage({ characterId, stamps, totalStamps, onGoHome, onChangeCharacter }) {
   const evo = getEvolution(characterId, totalStamps);
@@ -43,32 +43,19 @@ export default function RewardPage({ characterId, stamps, totalStamps, onGoHome,
                     style={{
                       position: 'absolute',
                       left: '-50%',
-                      top: '20px',
+                      top: '27px',
                       width: '100%',
                       height: '3px',
                       backgroundColor: isActive ? '#FFB74D' : '#E0E0E0',
                     }}
                   />
                 )}
-                <div
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    margin: '0 auto 4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.2rem',
-                    backgroundColor: isActive ? '#FFB74D' : '#E0E0E0',
-                    color: isActive ? 'white' : '#BDBDBD',
-                    fontWeight: 800,
-                    border: isCurrent ? '3px solid #FF7043' : 'none',
-                    position: 'relative',
-                    zIndex: 1,
-                  }}
-                >
-                  {i + 1}
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '50%', margin: '0 auto 5px',
+                  backgroundColor: isActive ? '#FFF8E1' : '#EEEEEE', border: isCurrent ? '3px solid #FF7043' : '2px solid white',
+                  position: 'relative', zIndex: 1, overflow: 'hidden', filter: isActive ? 'none' : 'grayscale(1)', opacity: isActive ? 1 : 0.55,
+                }}>
+                  <CharacterAvatar typeId={characterId} totalStamps={LEVELS[i].minStamps} size={52} />
                 </div>
                 <p style={{
                   fontSize: '0.7rem',

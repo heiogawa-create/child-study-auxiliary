@@ -25,24 +25,22 @@ export default function GradeSelectPage({ subject, characterId, totalStamps, onS
         {GRADES.map((grade) => (
           <button
             key={grade.id}
-            onClick={() => grade.available && onSelectGrade(grade.id)}
-            disabled={!grade.available}
+            onClick={() => onSelectGrade(grade.id)}
             style={{
               width: '100%',
               padding: '18px 24px',
               fontSize: '1.3rem',
               fontWeight: 700,
               fontFamily: 'inherit',
-              color: grade.available ? 'white' : '#BDBDBD',
-              backgroundColor: grade.available ? '#FF7043' : '#F5F5F5',
+              color: 'white',
+              backgroundColor: '#FF7043',
               border: 'none',
               borderRadius: '16px',
-              cursor: grade.available ? 'pointer' : 'not-allowed',
-              boxShadow: grade.available ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             }}
           >
             {grade.name}
-            {!grade.available && '（じゅんびちゅう）'}
           </button>
         ))}
       </div>

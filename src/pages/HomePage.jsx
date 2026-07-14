@@ -1,13 +1,13 @@
 import CharacterAvatar from '../components/CharacterAvatar';
 import SubjectButton from '../components/SubjectButton';
-import { getEvolution, getLevel, getNextLevelStamps } from '../data/characters';
+import { getEvolution, getLevelProgress } from '../data/characters';
 
 const SUBJECTS = ['さんすう', 'こくご', 'えいご', 'りか', 'そのほか'];
 
 export default function HomePage({ characterId, onSelectSubject, totalStamps, todayStamps }) {
   const evo = getEvolution(characterId, totalStamps);
-  const level = getLevel(totalStamps);
-  const nextStamps = getNextLevelStamps(totalStamps);
+  const levelProgress = getLevelProgress(totalStamps);
+  const level = levelProgress.level;
 
   return (
     <div style={{ padding: '24px 16px', maxWidth: '480px', margin: '0 auto' }}>
@@ -61,7 +61,7 @@ export default function HomePage({ characterId, onSelectSubject, totalStamps, to
           <span>🏆 ぜんぶ: <strong>{totalStamps}こ</strong></span>
         </div>
 
-        {nextStamps !== null ? (
+        {levelProgress.nextMinimum !== null ? (
           <>
             <div
               style={{
@@ -75,7 +75,7 @@ export default function HomePage({ characterId, onSelectSubject, totalStamps, to
               <div
                 style={{
                   height: '100%',
-                  width: `${Math.min((totalStamps / nextStamps) * 100, 100)}%`,
+                  width: `${levelProgress.percentage}%`,
                   backgroundColor: '#FFB74D',
                   borderRadius: '6px',
                   transition: 'width 0.5s ease',
@@ -83,7 +83,7 @@ export default function HomePage({ characterId, onSelectSubject, totalStamps, to
               />
             </div>
             <p style={{ fontSize: '0.8rem', color: '#9E9E9E', textAlign: 'right' }}>
-              つぎのしんかまで あと <strong style={{ color: '#FF7043' }}>{nextStamps - totalStamps}</strong>こ
+              つぎのしんかまで あと <strong style={{ color: '#FF7043' }}>{levelProgress.remaining}</strong>こ
             </p>
           </>
         ) : (

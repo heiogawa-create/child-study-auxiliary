@@ -328,9 +328,27 @@ function StarAvatar({ level }) {
   );
 }
 
+const OWL_IMAGE_PATHS = [
+  '/characters/owl/owl-01-hou.webp',
+  '/characters/owl/owl-02-wiz.webp',
+  '/characters/owl/owl-03-sage.webp',
+  '/characters/owl/owl-04-gran.webp',
+];
+
+function OwlImageAvatar({ level }) {
+  return (
+    <img
+      src={OWL_IMAGE_PATHS[level - 1] || OWL_IMAGE_PATHS[0]}
+      alt=""
+      draggable="false"
+      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', borderRadius: '22%' }}
+    />
+  );
+}
+
 const AVATAR_MAP = {
   fairy: FairyAvatar,
-  owl: OwlAvatar,
+  owl: OwlImageAvatar,
   robot: RobotAvatar,
   animal: AnimalAvatar,
   star: StarAvatar,

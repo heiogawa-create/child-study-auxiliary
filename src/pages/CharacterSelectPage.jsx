@@ -94,6 +94,9 @@ export default function CharacterSelectPage({ onSelect, currentCharacterId = nul
                 >
                   {type.description}
                 </p>
+                <p style={{ marginTop: '6px', fontSize: '0.68rem', lineHeight: 1.4, color: '#8D6E63', fontWeight: 700 }}>
+                  {type.evolution.map((character) => character.name).join(' → ')}
+                </p>
               </div>
             </button>
           );
