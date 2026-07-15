@@ -106,6 +106,16 @@ export function AccountProvider({ children }) {
     return { session: nextSession, needsVerification: !nextSession };
   }, [syncProfile]);
 
+  const verifyEmail = useCallback(async ({ email, otp }) => {
+    setError('');
+    const result = await authClient.emailOtp.verifyEmail({ email, otp });
+    if (result.error) throw new Error(result.error.message || '確認コードを確認できませんでした');
+    const nextSession = normalizeSessionResult(result) || await getFreshSession();
+    setSession(nextSession);
+    if (nextSession) await syncProfile();
+    return nextSession;
+  }, [syncProfile]);
+
   const signOut = useCallback(async () => {
     if (authClient) await authClient.signOut();
     setSession(null);
@@ -124,12 +134,13 @@ export function AccountProvider({ children }) {
     isAdmin: Boolean(account?.isAdmin),
     signIn,
     signUp,
+    verifyEmail,
     signOut,
     syncProfile,
     refreshAccount,
     apiFetch,
   }), [
-    session, account, loading, error, signIn, signUp, signOut,
+    session, account, loading, error, signIn, signUp, verifyEmail, signOut,
     syncProfile, refreshAccount, apiFetch,
   ]);
 

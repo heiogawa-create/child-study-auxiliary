@@ -50,11 +50,13 @@ async function copyText(value) {
 }
 
 function AuthForm() {
-  const { signIn, signUp } = useAccount();
+  const { signIn, signUp, verifyEmail } = useAccount();
   const [mode, setMode] = useState('signup');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -66,7 +68,8 @@ function AuthForm() {
       if (mode === 'signup') {
         const result = await signUp({ name: name || '保護者', email, password });
         if (result.needsVerification) {
-          setMessage('確認メールを送りました。メール内の案内から登録を完了してください。');
+          setVerificationEmail(email);
+          setMessage('確認コードをメールで送りました。届いたコードを入力してください。');
         }
       } else {
         await signIn({ email, password });
@@ -77,6 +80,58 @@ function AuthForm() {
       setBusy(false);
     }
   };
+
+  const submitVerification = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setMessage('');
+    try {
+      const nextSession = await verifyEmail({
+        email: verificationEmail,
+        otp: verificationCode.trim(),
+      });
+      if (!nextSession) {
+        await signIn({ email: verificationEmail, password });
+      }
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (verificationEmail) {
+    return (
+      <div style={panelStyle}>
+        <h2 style={{ color: '#5D4037', marginBottom: '6px' }}>確認コードを入力</h2>
+        <p style={{ color: '#8D6E63', fontSize: '0.88rem', marginBottom: '16px', overflowWrap: 'anywhere' }}>
+          {verificationEmail} に届いた確認コードを入力してください。
+        </p>
+        <form onSubmit={submitVerification} style={{ display: 'grid', gap: '11px' }}>
+          <input
+            style={{ ...inputStyle, textAlign: 'center', fontSize: '1.25rem', letterSpacing: '0.2em' }}
+            value={verificationCode}
+            onChange={(event) => setVerificationCode(event.target.value.replace(/\s/g, ''))}
+            placeholder="確認コード"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            required
+          />
+          <button type="submit" style={primaryButtonStyle} disabled={busy}>
+            {busy ? '確認中…' : 'メールアドレスを確認する'}
+          </button>
+        </form>
+        {message && <p style={{ marginTop: '12px', color: message.includes('送りました') ? '#2E7D32' : '#D84315', fontWeight: 700 }}>{message}</p>}
+        <button
+          type="button"
+          onClick={() => { setVerificationEmail(''); setVerificationCode(''); setMessage(''); }}
+          style={{ marginTop: '14px', border: 'none', background: 'none', color: '#1E88E5', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}
+        >
+          メールアドレスを入力し直す
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={panelStyle}>
