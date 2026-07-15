@@ -68,7 +68,7 @@ npm run dev
 2. Neon SQL Editorで [`database/schema.sql`](database/schema.sql) を実行します。
 3. Neon Auth URLを、Cloudflareのビルド変数 `VITE_NEON_AUTH_URL` に設定します。
 4. 同じURLをWorker変数 `NEON_AUTH_URL` に設定します。
-5. Neon AuthのJWKS URLを `NEON_AUTH_JWKS_URL` に設定します。通常は `<NEON_AUTH_URL>/auth/jwks` です。
+5. Configuration画面に表示されたJWKS URLを、そのまま `NEON_AUTH_JWKS_URL` に設定します。通常は `<NEON_AUTH_URL>/.well-known/jwks.json` です。
 6. Neon接続文字列をWorkerの暗号化されたSecret `DATABASE_URL` に設定します。
 
 会員メールはNeon Authを正として、紹介リンクの紐付けは初回登録時に一度だけ保存します。自己紹介や後からの紹介者変更はできません。

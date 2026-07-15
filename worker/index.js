@@ -59,7 +59,7 @@ async function requireUser(request, env) {
 
   const token = header.slice(7).trim();
   const jwksUrl = env.NEON_AUTH_JWKS_URL
-    || (env.NEON_AUTH_URL ? `${env.NEON_AUTH_URL.replace(/\/$/, '')}/auth/jwks` : '');
+    || (env.NEON_AUTH_URL ? `${env.NEON_AUTH_URL.replace(/\/$/, '')}/.well-known/jwks.json` : '');
 
   if (!jwksUrl) {
     throw new HttpError(503, 'NEON_AUTH_JWKS_URLがまだ設定されていません');
