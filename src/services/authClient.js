@@ -10,6 +10,9 @@ export function normalizeSessionResult(result) {
   if (!data?.session) return null;
   return {
     ...data.session,
+    // Neon Auth (Better Auth) exposes the signed JWT as `session.token`.
+    // Keep `access_token` as the app's internal compatibility name.
+    access_token: data.session.access_token || data.session.token || null,
     user: data.user || data.session.user || null,
   };
 }
