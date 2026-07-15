@@ -56,12 +56,14 @@ export function AccountProvider({ children }) {
 
   const refreshAccount = useCallback(async () => {
     if (!isAuthConfigured) return null;
+    setError('');
     try {
       const data = await apiFetch('/api/account');
       setAccount(data);
       return data;
     } catch (requestError) {
       if (requestError.message.includes('まだ作成')) return syncProfile();
+      setError(requestError.message);
       throw requestError;
     }
   }, [apiFetch, syncProfile]);
@@ -120,6 +122,7 @@ export function AccountProvider({ children }) {
     if (authClient) await authClient.signOut();
     setSession(null);
     setAccount(null);
+    setError('');
   }, []);
 
   const value = useMemo(() => ({
