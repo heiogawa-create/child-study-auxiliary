@@ -334,7 +334,7 @@ function AdminPayoutPanel({ apiFetch }) {
 
 export default function AccountPage({ onBack }) {
   const {
-    configured, user, account, loading, signOut, apiFetch, refreshAccount,
+    configured, user, account, loading, error, signOut, apiFetch, refreshAccount,
   } = useAccount();
   const [pricing, setPricing] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -397,6 +397,22 @@ export default function AccountPage({ onBack }) {
           </div>
           <AuthForm />
         </>
+      )}
+      {configured && user && !account && (
+        <div style={panelStyle}>
+          <h2 style={{ color: '#5D4037', marginBottom: '8px' }}>会員情報を読み込めませんでした</h2>
+          <p style={{ color: '#D84315', marginBottom: '14px', overflowWrap: 'anywhere' }}>
+            {error || '通信が一時的に失敗しました。もう一度お試しください。'}
+          </p>
+          <div style={{ display: 'grid', gap: '9px' }}>
+            <button type="button" style={primaryButtonStyle} onClick={() => refreshAccount().catch(() => {})}>
+              もう一度読み込む
+            </button>
+            <button type="button" onClick={signOut} style={{ border: 'none', background: 'none', color: '#1E88E5', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700 }}>
+              ログアウトしてやり直す
+            </button>
+          </div>
+        </div>
       )}
       {configured && user && account && (
         <>
