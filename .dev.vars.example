@@ -1,0 +1,13 @@
+# ローカルのCloudflare Worker用。実値を入れた.dev.varsはGitに追加しないでください。
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require
+NEON_AUTH_URL=https://your-neon-auth-url
+NEON_AUTH_JWKS_URL=https://your-neon-auth-url/auth/jwks
+
+STRIPE_SECRET_KEY=sk_test_xxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxx
+STRIPE_PRICE_ID_MONTHLY_480=price_xxxxx
+STRIPE_FOUNDERS_COUPON_ID=first_100_300_jpy
+
+ADMIN_EMAILS=owner@example.com
+ANTHROPIC_API_KEY=sk-ant-xxxxx
+ANTHROPIC_MODEL=claude-sonnet-4-20250514

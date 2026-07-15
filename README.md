@@ -46,93 +46,105 @@
 ## ローカルでの起動方法
 
 ```bash
-# 依存パッケージのインストール
 npm install
-
-# 開発サーバーの起動（フロントエンドのみ）
+cp .env.example .env
+cp .dev.vars.example .dev.vars
 npm run dev
-
-# 本番モードで起動（API含む）
-npm run build
-npm start
 ```
 
-開発サーバー: `http://localhost:5173`
-本番サーバー: `http://localhost:3000`
+`npm run preview` で、ビルド済みのCloudflare Workerをローカル確認できます。秘密情報を入れた `.env` と `.dev.vars` はGitへ追加しないでください。
 
-### Netlifyのプレビュー
+## 料金と無料範囲
 
-`netlify.toml` で `npm run build` と `dist` 配信を設定済みです。算数ドリルとローカルヒントは静的配信だけで動きます。写真・自由入力のAIヒント（`/api/hint`）まで使う本番環境は、下記のRender構成を使用してください。
+- 小学1年生の算数は無料
+- 小学2〜6年生の算数、写真・自由入力AIヒントは月額480円
+- 最初の100名は月額300円。キャンペーン中に登録した方は、契約を継続している間ずっと300円
+- 紹介リンク経由の会員が月額決済を完了するたび、紹介者へ毎月100円
+- 紹介報酬は月末締め、翌月7日までにPayPayで手動送金
 
-## Renderへのデプロイ方法
+## Neonのセットアップ
 
-### 方法1: render.yamlで自動セットアップ
+1. NeonプロジェクトでAuthを有効にし、メール確認を有効にします。
+2. Neon SQL Editorで [`database/schema.sql`](database/schema.sql) を実行します。
+3. Neon Auth URLを、Cloudflareのビルド変数 `VITE_NEON_AUTH_URL` に設定します。
+4. 同じURLをWorker変数 `NEON_AUTH_URL` に設定します。
+5. Neon AuthのJWKS URLを `NEON_AUTH_JWKS_URL` に設定します。通常は `<NEON_AUTH_URL>/auth/jwks` です。
+6. Neon接続文字列をWorkerの暗号化されたSecret `DATABASE_URL` に設定します。
 
-1. このリポジトリをGitHubにプッシュ
-2. [Render](https://render.com/)にログイン
-3. 「New」→「Blueprint」→ このリポジトリを選択
-4. `render.yaml` が自動で読み込まれる
-5. 環境変数 `ANTHROPIC_API_KEY` を設定して「Apply」
+会員メールはNeon Authを正として、紹介リンクの紐付けは初回登録時に一度だけ保存します。自己紹介や後からの紹介者変更はできません。
 
-### 方法2: 手動セットアップ
+## Stripeのセットアップ
 
-1. Renderで「New」→「Web Service」
-2. GitHubリポジトリを接続
-3. 以下を設定:
+Stripeはテストモードで次の順に作成し、テスト決済を通してから本番モードにも同じ構成を作ります。
 
-| 項目 | 値 |
-|------|-----|
-| **Runtime** | Node |
-| **Build command** | `npm install && npm run build` |
-| **Start command** | `node server.mjs` |
+1. 商品「べんきょうヒント プレミアム」を作成します。
+2. 月額480円・JPYの継続Priceを作成し、IDを `STRIPE_PRICE_ID_MONTHLY_480` に設定します。
+3. クーポンを次の内容で作成し、IDを `STRIPE_FOUNDERS_COUPON_ID` に設定します。
+   - 180円引き
+   - 通貨 JPY
+   - 期間 Forever（継続中ずっと）
+   - 最大利用回数 100
+4. Customer Portalで解約・支払方法変更を許可します。
+5. Webhook送信先を `https://child-study-auxiliary.heiogawa.workers.dev/api/stripe/webhook` にします。
+6. 次のイベントを登録します。
+   - `checkout.session.completed`
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.paid`
+   - `credit_note.created`
+   - `charge.refunded`
+   - `charge.dispute.created`
+7. Stripe Secret Keyを `STRIPE_SECRET_KEY`、Webhook署名Secretを `STRIPE_WEBHOOK_SECRET` に設定します。
 
-4. Environment から `ANTHROPIC_API_KEY` を追加
+先着人数はStripeクーポンの最大利用回数でも制限するため、100人目付近の同時申込にも対応します。`invoice.paid` 1件につき紹介報酬100円を一度だけ記録し、Webhookの重複送信では増えません。
 
-## 環境変数の設定方法
+## Cloudflare Workerの設定
 
-| 変数名 | 説明 | 必須 |
-|--------|------|------|
-| `ANTHROPIC_API_KEY` | Anthropic APIキー | はい |
-| `PORT` | サーバーポート（Renderが自動設定） | いいえ |
+WorkerのSettings → Variables and Secretsに次を設定します。実際のキーをIssueやチャットへ貼らないでください。
 
-### ローカル
+| 変数 | 種類 | 内容 |
+|---|---|---|
+| `VITE_NEON_AUTH_URL` | Build variable | Neon Auth URL（フロントへ公開） |
+| `DATABASE_URL` | Secret | Neon接続文字列 |
+| `NEON_AUTH_URL` | Variable | Neon Auth URL |
+| `NEON_AUTH_JWKS_URL` | Variable | Neon Auth JWT検証用JWKS URL |
+| `STRIPE_SECRET_KEY` | Secret | Stripe Secret Key |
+| `STRIPE_WEBHOOK_SECRET` | Secret | Stripe Webhook署名Secret |
+| `STRIPE_PRICE_ID_MONTHLY_480` | Variable | 月額480円Price ID |
+| `STRIPE_FOUNDERS_COUPON_ID` | Variable | 先着100名クーポンID |
+| `ADMIN_EMAILS` | Variable | 精算画面を開けるメール。複数はカンマ区切り |
+| `ANTHROPIC_API_KEY` | Secret | 写真・自由入力AIヒント用 |
+| `ANTHROPIC_MODEL` | Variable | 任意。未指定時は既定モデル |
 
-`.env.example` をコピーして `.env` を作成してください。
+`wrangler.jsonc` のCronは毎日00:05（日本時間）に起動し、毎月1日だけ前月分を締めます。精算画面を開いた場合も過去月は締め処理されます。運用手順と利用者向け文案は [`docs/referral-program.md`](docs/referral-program.md) にあります。
+
+## 動作確認
 
 ```bash
-cp .env.example .env
-# .env に ANTHROPIC_API_KEY を記入
+npm run build
+npm run preview
 ```
 
-### Render
+Stripe CLIまたはStripe DashboardからテストWebhookを送り、次を確認します。
 
-Renderの管理画面 → Environment → Environment Variables から設定してください。
-
-## AI APIの仕組み
-
-```
-フロント (React)
-  ↓ POST /api/hint（写真+テキスト）
-サーバー (server.mjs)
-  ↓ Claude API呼び出し（マルチモーダル対応）
-Anthropic Claude
-  ↓ ヒントを返す（答えは絶対に出さない）
-フロント
-  ↓ ヒントを表示
-```
-
-APIキー未設定の場合はフォールバックの仮ヒントを返します。
+- 1〜100人目は300円、101人目以降は480円でCheckoutが作られる
+- 同じ `invoice.paid` を再送しても紹介報酬は1件のまま
+- 未払い・返金・チャージバックが報酬対象にならない
+- 管理者以外は月末精算APIを開けない
+- 「送金済みにする」でメール、件数、金額、日時が保存される
 
 ## プロジェクト構成
 
 ```
-server.mjs                       # Expressサーバー（API + 静的配信）
-render.yaml                      # Renderデプロイ設定
-netlify.toml                     # Netlifyビルド・静的プレビュー設定
+worker/index.js                  # Cloudflare Worker API / Stripe Webhook / 月末Cron
+database/schema.sql             # Neonテーブル・集計View・精算Function
+docs/referral-program.md        # 紹介制度の表示文案と月次運用
 public/characters/               # 5タイプ×4段階の進化WebP画像
 src/
 ├── main.jsx                     # エントリーポイント
 ├── App.jsx                      # メインアプリ（画面遷移管理）
+├── context/AccountContext.jsx   # Neon Auth・会員状態・学習同期
 ├── index.css                    # グローバルスタイル
 ├── components/
 │   ├── TeacherCharacter.jsx     # 先生キャラクター（SVG）
@@ -150,8 +162,10 @@ src/
 │   ├── GradeSelectPage.jsx      # 1〜6年生選択
 │   ├── UnitSelectPage.jsx       # 単元選択
 │   ├── QuizPage.jsx             # 40問ドリル・図表・ローカルヒント
-│   └── RewardPage.jsx           # 進化ロードマップ・スタンプ画面
+│   ├── RewardPage.jsx           # 進化ロードマップ・スタンプ画面
+│   └── AccountPage.jsx          # Stripe申込・紹介実績・管理者精算
 ├── services/
+│   ├── authClient.js            # Neon Authクライアント
 │   ├── hintService.js           # フロント側AI API呼び出し
 │   └── problemGenerator.js      # 87単元の問題生成・採点
 └── hooks/
@@ -161,6 +175,8 @@ src/
 ## 技術スタック
 
 - Vite + React（フロントエンド）
-- Express（APIサーバー）
+- Cloudflare Workers（API・静的配信・月末Cron）
+- Neon Postgres / Neon Auth（会員・学習・紹介実績）
+- Stripe Checkout / Billing（継続課金・先着100名割引）
 - Anthropic Claude API（AI ヒント生成・画像読み取り）
-- デプロイ先: Render（Web Service）
+- PayPay（紹介報酬の手動送金）

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import CharacterSelectPage from './pages/CharacterSelectPage';
 import HomePage from './pages/HomePage';
 import InputPage from './pages/InputPage';
@@ -8,14 +8,19 @@ import EvolutionPage from './pages/EvolutionPage';
 import GradeSelectPage from './pages/GradeSelectPage';
 import UnitSelectPage from './pages/UnitSelectPage';
 import QuizPage from './pages/QuizPage';
+import AccountPage from './pages/AccountPage';
 import { useStamps } from './hooks/useStamps';
 import { useCharacter } from './hooks/useCharacter';
+import { useAccount } from './context/AccountContext';
 import { getLevel } from './data/characters';
 
 const UNIT_BASED_SUBJECTS = ['さんすう'];
 
 export default function App() {
-  const [page, setPage] = useState('home');
+  const [page, setPage] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.has('checkout') || params.has('account') || params.has('ref') ? 'account' : 'home';
+  });
   const [subject, setSubject] = useState('');
   const [question, setQuestion] = useState('');
   const [thinking, setThinking] = useState('');
@@ -25,10 +30,22 @@ export default function App() {
   const [unit, setUnit] = useState(null);
   const { stamps, addStamp, todayCount, totalCount } = useStamps();
   const { characterId, selectCharacter, hasCharacter } = useCharacter();
+  const { configured, user, isPremium, syncProfile } = useAccount();
+  const hasPremiumAccess = !configured || isPremium;
   const prevLevelRef = useRef(getLevel(totalCount));
 
+  useEffect(() => {
+    if (!user || !hasCharacter) return undefined;
+    const timer = window.setTimeout(() => {
+      syncProfile({ characterId, totalStamps: totalCount }).catch((error) => {
+        console.warn('学習記録を同期できませんでした:', error.message);
+      });
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [user, hasCharacter, characterId, totalCount, syncProfile]);
+
   // キャラ未選択なら選択画面
-  if (!hasCharacter) {
+  if (!hasCharacter && page !== 'account') {
     return (
       <div style={{ flex: 1, paddingBottom: '80px' }}>
         <CharacterSelectPage onSelect={selectCharacter} />
@@ -38,6 +55,10 @@ export default function App() {
   }
 
   const handleSelectSubject = (selectedSubject) => {
+    if (selectedSubject !== 'さんすう' && !hasPremiumAccess) {
+      setPage('account');
+      return;
+    }
     setSubject(selectedSubject);
     setPage(UNIT_BASED_SUBJECTS.includes(selectedSubject) ? 'grade' : 'input');
   };
@@ -146,22 +167,35 @@ export default function App() {
         >
           💡 べんきょうヒント
         </button>
-        <button
-          onClick={handleGoReward}
-          style={{
-            background: 'rgba(255,224,130,0.4)',
-            border: 'none',
-            borderRadius: '20px',
-            padding: '6px 14px',
-            fontSize: '0.95rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            color: '#E65100',
-          }}
-        >
-          ⭐ {totalCount}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+          <button
+            onClick={() => setPage('account')}
+            style={{
+              background: isPremium ? 'rgba(102,187,106,0.16)' : 'rgba(66,165,245,0.12)',
+              border: 'none', borderRadius: '20px', padding: '6px 11px',
+              fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer',
+              fontFamily: 'inherit', color: isPremium ? '#2E7D32' : '#1976D2',
+            }}
+          >
+            {isPremium ? '✓ 会員' : '👤 会員'}
+          </button>
+          <button
+            onClick={handleGoReward}
+            style={{
+              background: 'rgba(255,224,130,0.4)',
+              border: 'none',
+              borderRadius: '20px',
+              padding: '6px 14px',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: '#E65100',
+            }}
+          >
+            ⭐ {totalCount}
+          </button>
+        </div>
       </header>
 
       {/* ページ切り替え */}
@@ -179,6 +213,8 @@ export default function App() {
           characterId={characterId}
           totalStamps={totalCount}
           onSelectGrade={handleSelectGrade}
+          canAccessPremium={hasPremiumAccess}
+          onRequirePremium={() => setPage('account')}
           onBack={handleGoHome}
         />
       )}
@@ -242,6 +278,7 @@ export default function App() {
           onBack={() => setPage('reward')}
         />
       )}
+      {page === 'account' && <AccountPage onBack={handleGoHome} />}
 
       <AppStyles />
     </div>

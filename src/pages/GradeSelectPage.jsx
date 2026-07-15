@@ -1,7 +1,15 @@
 import CharacterAvatar from '../components/CharacterAvatar';
 import { GRADES } from '../data/units';
 
-export default function GradeSelectPage({ subject, characterId, totalStamps, onSelectGrade, onBack }) {
+export default function GradeSelectPage({
+  subject,
+  characterId,
+  totalStamps,
+  onSelectGrade,
+  canAccessPremium,
+  onRequirePremium,
+  onBack,
+}) {
   return (
     <div style={{ padding: '24px 16px', maxWidth: '480px', margin: '0 auto' }}>
       <button
@@ -22,10 +30,12 @@ export default function GradeSelectPage({ subject, characterId, totalStamps, onS
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {GRADES.map((grade) => (
+        {GRADES.map((grade, index) => {
+          const locked = index > 0 && !canAccessPremium;
+          return (
           <button
             key={grade.id}
-            onClick={() => onSelectGrade(grade.id)}
+            onClick={() => locked ? onRequirePremium() : onSelectGrade(grade.id)}
             style={{
               width: '100%',
               padding: '18px 24px',
@@ -33,17 +43,23 @@ export default function GradeSelectPage({ subject, characterId, totalStamps, onS
               fontWeight: 700,
               fontFamily: 'inherit',
               color: 'white',
-              backgroundColor: '#FF7043',
+              backgroundColor: locked ? '#90A4AE' : '#FF7043',
               border: 'none',
               borderRadius: '16px',
               cursor: 'pointer',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             }}
           >
-            {grade.name}
+            {locked ? '🔒 ' : ''}{grade.name}{locked ? '（プレミアム）' : ''}
           </button>
-        ))}
+          );
+        })}
       </div>
+      {!canAccessPremium && (
+        <p style={{ marginTop: '14px', textAlign: 'center', color: '#6D4C41', fontSize: '0.85rem' }}>
+          1年生は無料。2〜6年生は月額プランで使えます。
+        </p>
+      )}
     </div>
   );
 }

@@ -1,12 +1,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "child-study-auxiliary",
+  "main": "worker/index.js",
   "compatibility_date": "2026-07-15",
   "observability": {
     "enabled": true
   },
+  "vars": {
+    "APP_URL": "https://child-study-auxiliary.heiogawa.workers.dev"
+  },
   "assets": {
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application"
+  },
+  "triggers": {
+    "crons": ["5 15 * * *"]
   },
   "compatibility_flags": [
     "nodejs_compat"

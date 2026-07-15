@@ -1,5 +1,7 @@
+import { getAccessToken } from './authClient';
+
 // ヒント生成サービス
-// Netlify Function経由でAnthropic Claude APIを呼び出す
+// Cloudflare Worker経由でAnthropic Claude APIを呼び出す
 // API未接続時は仮のヒントを返す（フォールバック）
 
 // 教科ごとの仮ヒント（APIエラー時のフォールバック）
@@ -33,7 +35,7 @@ const FALLBACK_HINTS = {
 
 /**
  * ヒントを生成する関数
- * Netlify Function（/api/hint）経由でClaude APIを呼び出す
+ * Cloudflare Worker（/api/hint）経由でClaude APIを呼び出す
  * APIが使えない場合はフォールバックの仮ヒントを返す
  *
  * @param {string} subject - 教科名
@@ -45,9 +47,13 @@ const FALLBACK_HINTS = {
  */
 export async function generateHint(subject, question, thinking, hintLevel, photo = null) {
   try {
+    const accessToken = await getAccessToken();
     const response = await fetch('/api/hint', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
       body: JSON.stringify({ subject, question, thinking, hintLevel, photo }),
     });
 
