@@ -1,5 +1,6 @@
-// 文部科学省「小学校学習指導要領（平成29年告示）算数編」の
-// 4領域（数と計算・図形・測定/変化と関係・データの活用）を基にした単元データ。
+// 文部科学省「小学校学習指導要領（平成29年告示）」を基にした単元データ。
+// さんすうは4領域（数と計算・図形・測定/変化と関係・データの活用）、
+// こくごは学年別漢字配当表と言葉の学習、りか・しゃかいは3〜6年の学習内容に対応。
 // 教科書会社によって単元名や学習順は異なるため、アプリでは内容別に整理している。
 
 export const DEFAULT_QUESTION_COUNT = 40;
@@ -123,6 +124,98 @@ export const UNITS = {
       unit('g6-histogram', '度数分布表と 柱状グラフ', 'g6Histogram', '📶', 'データの活用', '階級・度数・分布の特徴'),
       unit('g6-combinations', '並べ方と 組み合わせ', 'g6Combinations', '🎲', 'データの活用', '起こり得る場合を整理する'),
       unit('g6-word', '6年生の 総合文章問題', 'g6WordProblems', '📝', '活用', '分数・比・速さ・体積'),
+    ],
+  },
+  こくご: {
+    g1: [
+      unit('jp1-kanji-read', 'かん字の よみかた', 'jp1KanjiRead', '📖', 'かん字', '一年生の かん字を よむ'),
+      unit('jp1-kanji-write', 'かん字の かきかた', 'jp1KanjiWrite', '✏️', 'かん字', 'よみかたに あう かん字を えらぶ'),
+      unit('jp1-kana', 'ひらがなと カタカナ', 'jp1Kana', '🔤', 'ことば', 'カタカナの ただしい かきかた'),
+      unit('jp1-antonym', 'はんたいの ことば', 'jp1Antonym', '🔁', 'ことば', 'いみが はんたいの ことば'),
+      unit('jp1-particle', '「は・を・へ」の つかいかた', 'jp1Particle', '📝', 'ぶんの きまり', 'くっつきの「は・を・へ」'),
+    ],
+    g2: [
+      unit('jp2-kanji-read', 'かん字の 読みかた', 'jp2KanjiRead', '📖', 'かん字', '二年生の かん字を 読む'),
+      unit('jp2-kanji-write', 'かん字の 書きかた', 'jp2KanjiWrite', '✏️', 'かん字', '読みかたに あう かん字を えらぶ'),
+      unit('jp2-vocab', 'はんたいことば・にたことば', 'jp2Vocab', '🔁', 'ことば', 'はんたいの ことば・にた いみの ことば'),
+      unit('jp2-subject', 'しゅごと じゅつご', 'jp2SubjectPredicate', '🗣️', 'ぶんの きまり', '「だれが」「どうする」を 見つける'),
+    ],
+    g3: [
+      unit('jp3-kanji-read', '漢字の 読み方', 'jp3KanjiRead', '📖', '漢字', '三年生の 漢字を 読む'),
+      unit('jp3-kanji-write', '漢字の 書き方', 'jp3KanjiWrite', '✏️', '漢字', '読み方に あう 漢字を えらぶ'),
+      unit('jp3-romaji', 'ローマ字', 'jp3Romaji', '🔡', 'ことば', 'ローマ字の 読み書き'),
+      unit('jp3-kotowaza', 'ことわざ・慣用句', 'jp3Kotowaza', '🐒', 'ことば', 'ことわざの いみと つかい方'),
+    ],
+    g4: [
+      unit('jp4-kanji-read', '漢字の 読み方', 'jp4KanjiRead', '📖', '漢字', '四年生の 漢字を 読む'),
+      unit('jp4-kanji-write', '漢字の 書き方', 'jp4KanjiWrite', '✏️', '漢字', '読み方に あう 漢字を えらぶ'),
+      unit('jp4-jukugo', '熟語の 組み立て', 'jp4Jukugo', '🧩', 'ことば', '二字熟語の 意味の つながり'),
+      unit('jp4-idiom', '慣用句・ことわざ', 'jp4Idiom', '👂', 'ことば', '体を つかった 慣用句など'),
+    ],
+    g5: [
+      unit('jp5-kanji-read', '漢字の 読み方', 'jp5KanjiRead', '📖', '漢字', '五年生の 漢字を 読む'),
+      unit('jp5-kanji-write', '漢字の 書き方', 'jp5KanjiWrite', '✏️', '漢字', '読み方に あう 漢字を えらぶ'),
+      unit('jp5-keigo', '敬語', 'jp5Keigo', '🙇', 'ことば', 'ていねい語・尊敬語・けんじょう語'),
+      unit('jp5-wordorigin', '和語・漢語・外来語', 'jp5WordOrigin', '🌐', 'ことば', 'ことばの 由来で 分ける'),
+    ],
+    g6: [
+      unit('jp6-kanji-read', '漢字の 読み方', 'jp6KanjiRead', '📖', '漢字', '六年生の 漢字を 読む'),
+      unit('jp6-kanji-write', '漢字の 書き方', 'jp6KanjiWrite', '✏️', '漢字', '読み方に あう 漢字を えらぶ'),
+      unit('jp6-yojijukugo', '四字熟語', 'jp6Yojijukugo', '🀄', 'ことば', '四字熟語の 意味と 漢字'),
+      unit('jp6-synonym', '類義語と 対義語', 'jp6Synonym', '🔁', 'ことば', 'にた意味・反対の意味の 熟語'),
+    ],
+  },
+  りか: {
+    g3: [
+      unit('sci3-insects', 'こん虫と しょくぶつ', 'sci3Insects', '🐛', '生命', 'こん虫の体・育ち方・植物のつくり'),
+      unit('sci3-sun', 'かげと 太陽・光', 'sci3Sun', '☀️', '地球', 'かげのでき方・日なたと日かげ・光のせいしつ'),
+      unit('sci3-magnet', 'じしゃくと 電気', 'sci3Magnet', '🧲', 'エネルギー', 'じしゃくのせいしつ・豆電球のつなぎ方'),
+      unit('sci3-force', '風とゴムの力・音・重さ', 'sci3Force', '🎐', 'エネルギー', '力のはたらき・音のせいしつ・ものの重さ'),
+    ],
+    g4: [
+      unit('sci4-seasons', '季節と 生き物', 'sci4Seasons', '🌸', '生命', '春夏秋冬の 生き物のようす・体のつくり'),
+      unit('sci4-electric', '電気の はたらき', 'sci4Electric', '🔋', 'エネルギー', '直列・へい列つなぎ・電流の向き'),
+      unit('sci4-moonstars', '月と 星', 'sci4MoonStars', '🌙', '地球', '月の形と動き・星の明るさと動き'),
+      unit('sci4-matter', 'ものの温度と 水のすがた', 'sci4Matter', '🌡️', '粒子', 'あたたまり方・体積の変化・水の三態'),
+    ],
+    g5: [
+      unit('sci5-plants', '植物の 発芽と成長', 'sci5Plants', '🌱', '生命', '発芽の条件・成長の条件・花と実'),
+      unit('sci5-life', 'メダカと 人のたんじょう', 'sci5Life', '🐟', '生命', 'たまごの育ち・母親の体の中での成長'),
+      unit('sci5-weather', '天気の変化と 流れる水', 'sci5Weather', '🌦️', '地球', '雲と天気・台風・流れる水のはたらき'),
+      unit('sci5-solution', 'もののとけ方・ふりこ・電磁石', 'sci5Solution', '⚗️', '粒子', '水よう液・ふりこのきまり・電磁石'),
+    ],
+    g6: [
+      unit('sci6-burning', 'ものの 燃え方', 'sci6Burning', '🔥', '粒子', '燃えるしくみ・酸素と二酸化炭素'),
+      unit('sci6-body', '人の体の つくりとはたらき', 'sci6HumanBody', '🫀', '生命', '呼吸・消化・血液のじゅんかん'),
+      unit('sci6-earth', '月と太陽・大地のつくり', 'sci6EarthSpace', '🌋', '地球', '月の満ち欠け・地層・火山・地震'),
+      unit('sci6-chem', '水よう液・てこ・電気の利用', 'sci6Chemistry', '⚖️', '粒子', '水よう液の性質・てこのきまり・発電'),
+    ],
+  },
+  しゃかい: {
+    g3: [
+      unit('soc3-map', 'まちのようすと 地図記号', 'soc3Map', '🗺️', '地理', '方位・地図記号・まちのようす'),
+      unit('soc3-work', 'はたらく人と お店・農家', 'soc3Work', '🏪', '経済', 'スーパー・農家・工場の仕事'),
+      unit('soc3-safety', 'くらしを守る（消防・警察）', 'soc3Safety', '🚒', 'くらし', '火事や事故から まちを守るしくみ'),
+      unit('soc3-old', '昔の道具と くらし', 'soc3Old', '🏮', '歴史', '昔の道具・くらしの うつりかわり'),
+    ],
+    g4: [
+      unit('soc4-prefectures', '都道府県と 日本地図', 'soc4Prefectures', '🗾', '地理', '47都道府県・県庁所在地・8地方'),
+      unit('soc4-water', '水・ごみと くらし', 'soc4Water', '🚰', 'くらし', 'じょう水場・下水・ごみのしょり'),
+      unit('soc4-disaster', '自然災害に そなえる', 'soc4Disaster', '⛑️', 'くらし', '地震・風水害への そなえ'),
+      unit('soc4-tradition', '地いきの伝統と 発てん', 'soc4Tradition', '🎎', '歴史', '伝統行事・先人のはたらき'),
+    ],
+    g5: [
+      unit('soc5-land', '日本の国土と 気候', 'soc5Land', '🏔️', '地理', '国土のようす・山地と平野・気候'),
+      unit('soc5-food', '米づくりと 水産業', 'soc5Food', '🌾', '産業', '食料生産・農業・水産業'),
+      unit('soc5-industry', '工業生産と 貿易', 'soc5Industry', '🏭', '産業', '自動車工業・工業地帯・貿易と運輸'),
+      unit('soc5-info', '情報と 環境', 'soc5Info', '📡', 'くらし', '情報の活用・公害と環境を守る'),
+    ],
+    g6: [
+      unit('soc6-politics', '憲法と 政治', 'soc6Politics', '🏛️', '公民', '日本国憲法・国会・内閣・裁判所'),
+      unit('soc6-history1', '歴史①（縄文〜室町）', 'soc6History1', '🏺', '歴史', '縄文・弥生・飛鳥・奈良・平安・鎌倉・室町'),
+      unit('soc6-history2', '歴史②（戦国〜江戸）', 'soc6History2', '🏯', '歴史', '戦国時代・天下統一・江戸幕府'),
+      unit('soc6-history3', '歴史③（明治〜現代）', 'soc6History3', '🚂', '歴史', '明治維新・戦争と平和・現代の日本'),
+      unit('soc6-world', '世界の中の 日本', 'soc6World', '🌍', '公民', '世界の国々・国際協力'),
     ],
   },
 };

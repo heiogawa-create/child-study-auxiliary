@@ -1,9 +1,34 @@
 import { createAuthClient } from '@neondatabase/auth';
 
-const authUrl = import.meta.env.VITE_NEON_AUTH_URL;
+// 認証URLは2か所から解決する。
+// 1. ビルド時の環境変数 VITE_NEON_AUTH_URL（従来どおり）
+// 2. Workerの実行時変数 NEON_AUTH_URL（/api/config経由・再ビルド不要）
+const buildTimeAuthUrl = import.meta.env.VITE_NEON_AUTH_URL || '';
 
-export const isAuthConfigured = Boolean(authUrl);
-export const authClient = isAuthConfigured ? createAuthClient(authUrl) : null;
+let authClient = buildTimeAuthUrl ? createAuthClient(buildTimeAuthUrl) : null;
+
+export function getAuthClient() {
+  return authClient;
+}
+
+export function isAuthReady() {
+  return Boolean(authClient);
+}
+
+export async function initAuth() {
+  if (authClient) return true;
+  try {
+    const response = await fetch('/api/config');
+    if (!response.ok) return false;
+    const data = await response.json().catch(() => ({}));
+    if (data.neonAuthUrl) {
+      authClient = createAuthClient(data.neonAuthUrl);
+    }
+  } catch (error) {
+    console.warn('認証設定を取得できませんでした:', error.message);
+  }
+  return Boolean(authClient);
+}
 
 export function normalizeSessionResult(result) {
   const data = result?.data || null;

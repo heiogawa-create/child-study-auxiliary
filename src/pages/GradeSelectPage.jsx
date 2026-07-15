@@ -1,5 +1,5 @@
 import CharacterAvatar from '../components/CharacterAvatar';
-import { GRADES } from '../data/units';
+import { GRADES, getUnits } from '../data/units';
 
 export default function GradeSelectPage({
   subject,
@@ -31,10 +31,13 @@ export default function GradeSelectPage({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {GRADES.map((grade, index) => {
-          const locked = index > 0 && !canAccessPremium;
+          // りか・しゃかいのように3年生から始まる教科は、単元のない学年を選べなくする
+          const unavailable = getUnits(subject, grade.id).length === 0;
+          const locked = !unavailable && index > 0 && !canAccessPremium;
           return (
           <button
             key={grade.id}
+            disabled={unavailable}
             onClick={() => locked ? onRequirePremium() : onSelectGrade(grade.id)}
             style={{
               width: '100%',
@@ -43,14 +46,17 @@ export default function GradeSelectPage({
               fontWeight: 700,
               fontFamily: 'inherit',
               color: 'white',
-              backgroundColor: locked ? '#90A4AE' : '#FF7043',
+              backgroundColor: unavailable ? '#CFD8DC' : locked ? '#90A4AE' : '#FF7043',
               border: 'none',
               borderRadius: '16px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              cursor: unavailable ? 'default' : 'pointer',
+              boxShadow: unavailable ? 'none' : '0 4px 12px rgba(0,0,0,0.15)',
             }}
           >
-            {locked ? '🔒 ' : ''}{grade.name}{locked ? '（プレミアム）' : ''}
+            {locked ? '🔒 ' : ''}{grade.name}
+            {unavailable ? (
+              <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>（３ねんせいから）</span>
+            ) : locked ? '（プレミアム）' : ''}
           </button>
           );
         })}

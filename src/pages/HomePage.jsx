@@ -2,7 +2,7 @@ import CharacterAvatar from '../components/CharacterAvatar';
 import SubjectButton from '../components/SubjectButton';
 import { getEvolution, getLevelProgress } from '../data/characters';
 
-const SUBJECTS = ['さんすう', 'こくご', 'えいご', 'りか', 'そのほか'];
+const SUBJECTS = ['さんすう', 'こくご', 'りか', 'しゃかい', 'えいご', 'そのほか'];
 
 export default function HomePage({ characterId, onSelectSubject, totalStamps, todayStamps }) {
   const evo = getEvolution(characterId, totalStamps);

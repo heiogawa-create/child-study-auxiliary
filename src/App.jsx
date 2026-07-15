@@ -14,7 +14,7 @@ import { useCharacter } from './hooks/useCharacter';
 import { useAccount } from './context/AccountContext';
 import { getLevel } from './data/characters';
 
-const UNIT_BASED_SUBJECTS = ['さんすう'];
+const UNIT_BASED_SUBJECTS = ['さんすう', 'こくご', 'りか', 'しゃかい'];
 
 export default function App() {
   const [page, setPage] = useState(() => {
@@ -30,8 +30,9 @@ export default function App() {
   const [unit, setUnit] = useState(null);
   const { stamps, addStamp, todayCount, totalCount } = useStamps();
   const { characterId, selectCharacter, hasCharacter } = useCharacter();
-  const { configured, user, isPremium, syncProfile } = useAccount();
-  const hasPremiumAccess = !configured || isPremium;
+  const { configured, loading: accountLoading, user, isPremium, syncProfile } = useAccount();
+  // 認証設定の確認が終わるまでは無料開放しない（確認中は会員ページへ誘導）
+  const hasPremiumAccess = (!configured && !accountLoading) || isPremium;
   const prevLevelRef = useRef(getLevel(totalCount));
 
   useEffect(() => {

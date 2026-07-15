@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
-  authClient,
+  getAuthClient,
   getFreshSession,
-  isAuthConfigured,
+  initAuth,
+  isAuthReady,
   normalizeSessionResult,
 } from '../services/authClient';
 
@@ -17,10 +18,17 @@ function rememberReferralCode() {
   }
 }
 
+function requireAuthClient() {
+  const client = getAuthClient();
+  if (!client) throw new Error('会員機能の準備ができていません。時間をおいて再読み込みしてください');
+  return client;
+}
+
 export function AccountProvider({ children }) {
+  const [configured, setConfigured] = useState(isAuthReady());
   const [session, setSession] = useState(null);
   const [account, setAccount] = useState(null);
-  const [loading, setLoading] = useState(isAuthConfigured);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const apiFetch = useCallback(async (path, options = {}) => {
@@ -42,7 +50,7 @@ export function AccountProvider({ children }) {
   }, []);
 
   const syncProfile = useCallback(async (learning = {}) => {
-    if (!isAuthConfigured) return null;
+    if (!isAuthReady()) return null;
     const data = await apiFetch('/api/profile/sync', {
       method: 'POST',
       body: JSON.stringify({
@@ -55,7 +63,7 @@ export function AccountProvider({ children }) {
   }, [apiFetch]);
 
   const refreshAccount = useCallback(async () => {
-    if (!isAuthConfigured) return null;
+    if (!isAuthReady()) return null;
     setError('');
     try {
       const data = await apiFetch('/api/account');
@@ -70,11 +78,14 @@ export function AccountProvider({ children }) {
 
   useEffect(() => {
     rememberReferralCode();
-    if (!isAuthConfigured) return;
 
     let active = true;
     (async () => {
       try {
+        const ready = await initAuth();
+        if (!active) return;
+        setConfigured(ready);
+        if (!ready) return;
         const freshSession = await getFreshSession();
         if (!active) return;
         setSession(freshSession);
@@ -90,7 +101,7 @@ export function AccountProvider({ children }) {
 
   const signIn = useCallback(async ({ email, password }) => {
     setError('');
-    const result = await authClient.signIn.email({ email, password, rememberMe: true });
+    const result = await requireAuthClient().signIn.email({ email, password, rememberMe: true });
     if (result.error) throw new Error(result.error.message || 'ログインできませんでした');
     const nextSession = normalizeSessionResult(result) || await getFreshSession();
     setSession(nextSession);
@@ -100,7 +111,7 @@ export function AccountProvider({ children }) {
 
   const signUp = useCallback(async ({ name, email, password }) => {
     setError('');
-    const result = await authClient.signUp.email({ name, email, password });
+    const result = await requireAuthClient().signUp.email({ name, email, password });
     if (result.error) throw new Error(result.error.message || '登録できませんでした');
     const nextSession = normalizeSessionResult(result) || await getFreshSession();
     setSession(nextSession);
@@ -110,7 +121,7 @@ export function AccountProvider({ children }) {
 
   const verifyEmail = useCallback(async ({ email, otp }) => {
     setError('');
-    const result = await authClient.emailOtp.verifyEmail({ email, otp });
+    const result = await requireAuthClient().emailOtp.verifyEmail({ email, otp });
     if (result.error) throw new Error(result.error.message || '確認コードを確認できませんでした');
     const nextSession = normalizeSessionResult(result) || await getFreshSession();
     setSession(nextSession);
@@ -119,14 +130,15 @@ export function AccountProvider({ children }) {
   }, [syncProfile]);
 
   const signOut = useCallback(async () => {
-    if (authClient) await authClient.signOut();
+    const client = getAuthClient();
+    if (client) await client.signOut();
     setSession(null);
     setAccount(null);
     setError('');
   }, []);
 
   const value = useMemo(() => ({
-    configured: isAuthConfigured,
+    configured,
     session,
     user: session?.user || null,
     account,
@@ -143,7 +155,7 @@ export function AccountProvider({ children }) {
     refreshAccount,
     apiFetch,
   }), [
-    session, account, loading, error, signIn, signUp, verifyEmail, signOut,
+    configured, session, account, loading, error, signIn, signUp, verifyEmail, signOut,
     syncProfile, refreshAccount, apiFetch,
   ]);
 

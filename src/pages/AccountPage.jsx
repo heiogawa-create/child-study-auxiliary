@@ -186,6 +186,7 @@ function PricingCard({ pricing, account, onCheckout, onPortal, busy }) {
       )}
       <ul style={{ paddingLeft: '20px', lineHeight: 1.8, fontSize: '0.9rem', color: '#5D4037' }}>
         <li>小学2〜6年生の算数ドリル</li>
+        <li>こくご・りか・しゃかいのドリル</li>
         <li>写真・自由入力のAIヒント</li>
         <li>学習スタンプとキャラクターを保存</li>
       </ul>
@@ -379,7 +380,18 @@ export default function AccountPage({ onBack }) {
       {!configured && (
         <div style={panelStyle}>
           <h2>会員機能はセットアップ待ちです</h2>
-          <p style={{ marginTop: '8px', color: '#6D4C41' }}>CloudflareにVITE_NEON_AUTH_URLを設定すると、ログインとStripe申込が表示されます。</p>
+          <p style={{ marginTop: '8px', color: '#6D4C41', lineHeight: 1.7 }}>
+            Cloudflareダッシュボードで、このWorkerの「設定 → 変数とシークレット」に
+            <code style={{ background: '#FFF3E0', padding: '2px 6px', borderRadius: '6px' }}>NEON_AUTH_URL</code>
+            を追加すると、再ビルドなしでログインとStripe申込が表示されます。
+          </p>
+          <button
+            type="button"
+            style={{ ...primaryButtonStyle, marginTop: '14px' }}
+            onClick={() => window.location.reload()}
+          >
+            設定したので再読み込みする
+          </button>
         </div>
       )}
       {configured && !user && (

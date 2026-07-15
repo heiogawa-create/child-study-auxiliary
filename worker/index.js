@@ -758,6 +758,15 @@ async function handleApi(request, env) {
   if (path === '/api/health' && request.method === 'GET') {
     return responseJson({ ok: true, service: 'child-study-auxiliary' });
   }
+  if (path === '/api/config' && request.method === 'GET') {
+    // フロントのビルド時にVITE_NEON_AUTH_URLが無くても、Workerの実行時変数から
+    // 認証URLを配布できるようにする（公開情報のみを返すこと）。
+    return responseJson(
+      { neonAuthUrl: env.VITE_NEON_AUTH_URL || env.NEON_AUTH_URL || '' },
+      200,
+      { 'cache-control': 'public, max-age=300' },
+    );
+  }
   if (path === '/api/pricing' && request.method === 'GET') {
     const campaign = await getCampaignAvailability(env);
     return responseJson({

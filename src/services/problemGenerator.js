@@ -1,5 +1,8 @@
 // 小学1〜6年生の算数ドリル問題をローカルで生成・採点する。
 // 同じ単元を開き直すたびに数値と出題形式が変わるため、継続して反復できる。
+// こくご・りか・しゃかいの問題は contentGenerators に定義し、ここで統合する。
+
+import { CONTENT_GENERATORS } from './contentGenerators';
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -890,6 +893,8 @@ function genAdvancedWordProblem(grade) {
 }
 
 const GENERATORS = {
+  ...CONTENT_GENERATORS,
+
   g1Number10: () => pick([() => genCount(10), () => genSequence(0, 10, [1]), () => genComparison(0, 10), genMakeTen])(),
   g1Addition10: () => pick([() => genAddition(10), () => genMissingNumber(10, 'add'), () => genSimpleWordProblem(10, ['add'])])(),
   g1Subtraction10: () => pick([() => genSubtraction(10), () => genMissingNumber(10, 'sub'), () => genSimpleWordProblem(10, ['sub'])])(),
