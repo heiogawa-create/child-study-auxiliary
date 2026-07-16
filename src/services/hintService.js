@@ -74,3 +74,43 @@ function getFallbackHint(subject, hintLevel) {
   const clampedLevel = Math.min(hintLevel, hints.length - 1);
   return hints[clampedLevel];
 }
+
+/**
+ * 3回まちがえた後の解説を生成する（答えを含めてよいモード）
+ * APIが使えない場合は空文字を返し、呼び出し側でローカル解説にフォールバックする
+ *
+ * @param {string} subject - 教科名
+ * @param {string} question - 問題文
+ * @param {string} correctAnswer - 正しい答え（表示用の文字列）
+ * @param {string} userThinking - 子供が最後に答えた内容
+ * @returns {Promise<string>} 解説文（取得できなければ空文字）
+ */
+export async function generateExplanation(subject, question, correctAnswer, userThinking) {
+  try {
+    const accessToken = await getAccessToken();
+    const response = await fetch('/api/hint', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify({
+        subject,
+        question,
+        thinking: userThinking,
+        mode: 'explain',
+        correctAnswer,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.hint || '';
+  } catch (error) {
+    console.warn('AI explanation unavailable:', error.message);
+    return '';
+  }
+}

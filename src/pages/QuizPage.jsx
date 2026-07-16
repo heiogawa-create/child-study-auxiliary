@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import CharacterAvatar from '../components/CharacterAvatar';
 import ActionButton from '../components/ActionButton';
 import ClockFace from '../components/ClockFace';
 import { generateProblemSet, checkAnswer } from '../services/problemGenerator';
-import { generateHint } from '../services/hintService';
+import { generateHint, generateExplanation } from '../services/hintService';
 import { getEvolution } from '../data/characters';
 
 const MAX_HINTS = 3;
+// 3回まちがえたら答えと解説を表示する
+const MAX_ATTEMPTS = 3;
 
 function QuestionVisual({ visual }) {
   if (!visual) return null;
@@ -146,31 +148,67 @@ export default function QuizPage({ subject, unit, characterId, totalStamps, onEa
   const [hintLoading, setHintLoading] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [stampedThisQuestion, setStampedThisQuestion] = useState(false);
+  const [wrongCount, setWrongCount] = useState(0);
+  const [aiExplanation, setAiExplanation] = useState('');
+  const [explanationLoading, setExplanationLoading] = useState(false);
+  const explainRequestRef = useRef(0);
 
   const question = questions[index];
   const evo = useMemo(() => getEvolution(characterId, totalStamps), [characterId, totalStamps]);
   const isFinished = index >= questions.length;
   const progress = isFinished ? 100 : ((index + 1) / questions.length) * 100;
+  const isSolved = feedback === 'correct' || feedback === 'revealed';
+
+  const formatAnswerText = (q) => {
+    if (q.kind === 'clock') return `${q.answer.hour}じ${q.answer.minute}ふん`;
+    return `${q.answer}${q.answerSuffix ? ` ${q.answerSuffix}` : ''}`;
+  };
 
   const resetQuestionState = () => {
+    explainRequestRef.current += 1;
     setAnswer('');
     setClockAnswer({ hour: '', minute: '' });
     setFeedback(null);
     setHints([]);
     setStampedThisQuestion(false);
+    setWrongCount(0);
+    setAiExplanation('');
+    setExplanationLoading(false);
+  };
+
+  const revealAnswer = async () => {
+    setFeedback('revealed');
+    const requestId = explainRequestRef.current + 1;
+    explainRequestRef.current = requestId;
+    setExplanationLoading(true);
+    const lastAnswer = question.kind === 'clock'
+      ? `${clockAnswer.hour || '？'}じ${clockAnswer.minute || '？'}ふん`
+      : String(answer);
+    const text = await generateExplanation(subject, question.prompt, formatAnswerText(question), lastAnswer);
+    if (explainRequestRef.current !== requestId) return; // 次の問題へ進んだあとの応答は捨てる
+    setAiExplanation(text);
+    setExplanationLoading(false);
   };
 
   const handleCheck = () => {
     if (!question) return;
     const userInput = question.kind === 'clock' ? clockAnswer : answer;
     const isCorrect = checkAnswer(question, userInput);
-    setFeedback(isCorrect ? 'correct' : 'incorrect');
     if (isCorrect) {
+      setFeedback('correct');
       setCorrectCount((count) => count + 1);
       if (!stampedThisQuestion) {
         onEarnStamp();
         setStampedThisQuestion(true);
       }
+      return;
+    }
+    const nextWrong = wrongCount + 1;
+    setWrongCount(nextWrong);
+    if (nextWrong >= MAX_ATTEMPTS) {
+      revealAnswer();
+    } else {
+      setFeedback('incorrect');
     }
   };
 
@@ -249,29 +287,31 @@ export default function QuizPage({ subject, unit, characterId, totalStamps, onEa
         <div style={{ marginTop: '18px' }}>
           {question.kind === 'clock' ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-              <input type="number" inputMode="numeric" value={clockAnswer.hour} onChange={(event) => setClockAnswer((current) => ({ ...current, hour: event.target.value }))} disabled={feedback === 'correct'} style={{ width: '70px', padding: '10px', fontSize: '1.3rem', textAlign: 'center', border: '3px solid #E0E0E0', borderRadius: '10px' }} />
+              <input type="number" inputMode="numeric" value={clockAnswer.hour} onChange={(event) => setClockAnswer((current) => ({ ...current, hour: event.target.value }))} disabled={isSolved} style={{ width: '70px', padding: '10px', fontSize: '1.3rem', textAlign: 'center', border: '3px solid #E0E0E0', borderRadius: '10px' }} />
               <span style={{ fontSize: '1.15rem', fontWeight: 700 }}>じ</span>
-              <input type="number" inputMode="numeric" value={clockAnswer.minute} onChange={(event) => setClockAnswer((current) => ({ ...current, minute: event.target.value }))} disabled={feedback === 'correct'} style={{ width: '70px', padding: '10px', fontSize: '1.3rem', textAlign: 'center', border: '3px solid #E0E0E0', borderRadius: '10px' }} />
+              <input type="number" inputMode="numeric" value={clockAnswer.minute} onChange={(event) => setClockAnswer((current) => ({ ...current, minute: event.target.value }))} disabled={isSolved} style={{ width: '70px', padding: '10px', fontSize: '1.3rem', textAlign: 'center', border: '3px solid #E0E0E0', borderRadius: '10px' }} />
               <span style={{ fontSize: '1.15rem', fontWeight: 700 }}>ふん</span>
             </div>
           ) : question.kind === 'choice' ? (
             <div style={{ display: 'grid', gridTemplateColumns: question.choices.length > 2 ? 'repeat(2, minmax(0, 1fr))' : '1fr', gap: '10px' }}>
               {question.choices.map((choice) => {
                 const selected = answer === choice;
+                const showAsCorrect = feedback === 'revealed' && String(choice) === String(question.answer);
                 return (
-                  <button key={choice} type="button" onClick={() => feedback !== 'correct' && setAnswer(choice)} style={{
+                  <button key={choice} type="button" onClick={() => !isSolved && setAnswer(choice)} style={{
                     padding: '12px 8px', minHeight: '48px', borderRadius: '12px', fontFamily: 'inherit', fontSize: '1rem', fontWeight: 700,
-                    border: selected ? '3px solid #FF7043' : '2px solid #E0E0E0',
-                    background: selected ? '#FFF3E0' : '#FAFAFA', color: '#5D4037', cursor: feedback === 'correct' ? 'default' : 'pointer',
+                    border: showAsCorrect ? '3px solid #66BB6A' : selected ? '3px solid #FF7043' : '2px solid #E0E0E0',
+                    background: showAsCorrect ? '#E8F5E9' : selected ? '#FFF3E0' : '#FAFAFA',
+                    color: showAsCorrect ? '#2E7D32' : '#5D4037', cursor: isSolved ? 'default' : 'pointer',
                   }}>
-                    {choice}
+                    {showAsCorrect ? '⭕ ' : ''}{choice}
                   </button>
                 );
               })}
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <input type="number" inputMode="decimal" step="any" value={answer} onChange={(event) => setAnswer(event.target.value)} disabled={feedback === 'correct'} placeholder="こたえ" style={{ width: '150px', padding: '12px', fontSize: '1.35rem', textAlign: 'center', border: '3px solid #E0E0E0', borderRadius: '12px' }} />
+              <input type="number" inputMode="decimal" step="any" value={answer} onChange={(event) => setAnswer(event.target.value)} disabled={isSolved} placeholder="こたえ" style={{ width: '150px', padding: '12px', fontSize: '1.35rem', textAlign: 'center', border: '3px solid #E0E0E0', borderRadius: '12px' }} />
               {question.answerSuffix && <span style={{ fontSize: '1rem', fontWeight: 700 }}>{question.answerSuffix}</span>}
             </div>
           )}
@@ -297,12 +337,45 @@ export default function QuizPage({ subject, unit, characterId, totalStamps, onEa
       )}
       {feedback === 'incorrect' && (
         <div style={{ textAlign: 'center', padding: '12px', marginBottom: '16px', fontSize: '1.02rem', fontWeight: 700, color: '#E65100', background: '#FFF3E0', borderRadius: '12px' }}>
-          おしい！ヒントを見て もういちど考えよう
+          おしい！ヒントを見て もういちど考えよう（あと{MAX_ATTEMPTS - wrongCount}かい）
+        </div>
+      )}
+      {feedback === 'revealed' && (
+        <div style={{ padding: '16px', marginBottom: '16px', background: '#E3F2FD', borderRadius: '14px', border: '2px solid #90CAF9' }}>
+          <p style={{ textAlign: 'center', fontSize: '0.95rem', fontWeight: 800, color: '#1565C0' }}>
+            📖 3かい まちがえたので、こたえを かくにんしよう
+          </p>
+          <p style={{ textAlign: 'center', margin: '10px 0', fontSize: '1.3rem', fontWeight: 800, color: '#2E7D32' }}>
+            こたえ：{formatAnswerText(question)}
+          </p>
+          {question.explanation && (
+            <p style={{ fontSize: '0.92rem', lineHeight: 1.7, color: '#37474F', marginBottom: '8px' }}>{question.explanation}</p>
+          )}
+          {explanationLoading && (
+            <p style={{ textAlign: 'center', fontSize: '0.88rem', color: '#78909C' }}>💭 {evo.name}が くわしい かいせつを かんがえています…</p>
+          )}
+          {!explanationLoading && aiExplanation && (
+            <div style={{ marginTop: '6px', padding: '12px', background: 'white', borderRadius: '10px' }}>
+              <p style={{ fontSize: '0.8rem', color: '#FF7043', fontWeight: 700, marginBottom: '4px' }}>💡 {evo.name}の かいせつ</p>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{aiExplanation}</p>
+            </div>
+          )}
+          {!explanationLoading && !aiExplanation && question.hints?.length > 0 && (
+            <div style={{ marginTop: '6px', padding: '12px', background: 'white', borderRadius: '10px' }}>
+              <p style={{ fontSize: '0.8rem', color: '#FF7043', fontWeight: 700, marginBottom: '4px' }}>💡 かんがえかたの ポイント</p>
+              {question.hints.map((hint, hintIndex) => (
+                <p key={hintIndex} style={{ fontSize: '0.9rem', lineHeight: 1.7 }}>・{hint}</p>
+              ))}
+            </div>
+          )}
+          <p style={{ textAlign: 'center', marginTop: '10px', fontSize: '0.85rem', color: '#546E7A', fontWeight: 700 }}>
+            つぎは きっと できるよ！
+          </p>
         </div>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {feedback !== 'correct' && (
+        {!isSolved && (
           <>
             <ActionButton onClick={handleCheck} color="#66BB6A" disabled={!canCheck}>✅ こたえあわせ</ActionButton>
             {hints.length < MAX_HINTS && (
@@ -312,7 +385,7 @@ export default function QuizPage({ subject, unit, characterId, totalStamps, onEa
             )}
           </>
         )}
-        {feedback === 'correct' && <ActionButton onClick={handleNext} color="#42A5F5">➡️ つぎのもんだいへ</ActionButton>}
+        {isSolved && <ActionButton onClick={handleNext} color="#42A5F5">➡️ つぎのもんだいへ</ActionButton>}
       </div>
     </div>
   );
