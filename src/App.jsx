@@ -9,6 +9,7 @@ import GradeSelectPage from './pages/GradeSelectPage';
 import UnitSelectPage from './pages/UnitSelectPage';
 import QuizPage from './pages/QuizPage';
 import AccountPage from './pages/AccountPage';
+import AdminPage from './pages/AdminPage';
 import { useStamps } from './hooks/useStamps';
 import { useCharacter } from './hooks/useCharacter';
 import { useAccount } from './context/AccountContext';
@@ -46,7 +47,7 @@ export default function App() {
   }, [user, hasCharacter, characterId, totalCount, syncProfile]);
 
   // キャラ未選択なら選択画面
-  if (!hasCharacter && page !== 'account') {
+  if (!hasCharacter && page !== 'account' && page !== 'admin') {
     return (
       <div style={{ flex: 1, paddingBottom: '80px' }}>
         <CharacterSelectPage onSelect={selectCharacter} />
@@ -279,7 +280,8 @@ export default function App() {
           onBack={() => setPage('reward')}
         />
       )}
-      {page === 'account' && <AccountPage onBack={handleGoHome} />}
+      {page === 'account' && <AccountPage onBack={handleGoHome} onGoAdmin={() => setPage('admin')} />}
+      {page === 'admin' && <AdminPage onBack={() => setPage('account')} />}
 
       <AppStyles />
     </div>
